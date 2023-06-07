@@ -30,9 +30,15 @@
 		004A335B29B496E0001832E5 /* girl_11.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 004A335A29B496E0001832E5 /* girl_11.jpg */; };
 		004A335D29B496ED001832E5 /* girl_14.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 004A335C29B496ED001832E5 /* girl_14.jpg */; };
 		004A335F29B496F2001832E5 /* girl_10.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 004A335E29B496F2001832E5 /* girl_10.jpg */; };
-		004A336429B4ACD3001832E5 /* Girl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004A336329B4ACD3001832E5 /* Girl.swift */; };
-		004A336629B4ACDE001832E5 /* GirlCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 004A336529B4ACDE001832E5 /* GirlCell.swift */; };
-		335B22EC5872A60F078A8B89 /* libPods-WaterfallLayoutDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3EDD8F9D365ECC2A11902F16 /* libPods-WaterfallLayoutDemo.a */; };
+		1AF669AD2A30C3CA0059022D /* BrowseImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669AC2A30C3CA0059022D /* BrowseImageView.swift */; };
+		1AF669AF2A30C3D70059022D /* WaterfallCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669AE2A30C3D70059022D /* WaterfallCell.swift */; };
+		1AF669B12A30C3E00059022D /* WaterfallModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669B02A30C3E00059022D /* WaterfallModel.swift */; };
+		1AF669B32A30C3E50059022D /* WaterfallStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669B22A30C3E50059022D /* WaterfallStore.swift */; };
+		1AF669B52A30C3EF0059022D /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669B42A30C3EF0059022D /* Extensions.swift */; };
+		1AF669BB2A30C4000059022D /* JPBlurAnimationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669B82A30C3FF0059022D /* JPBlurAnimationView.swift */; };
+		1AF669BC2A30C4000059022D /* JPBlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669BA2A30C3FF0059022D /* JPBlurView.swift */; };
+		1AF669C02A30CD8F0059022D /* ScreenRotator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669BF2A30CD8F0059022D /* ScreenRotator.swift */; };
+		9D927CD912BE5FD64E571033 /* Pods_WaterfallLayoutDemo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A586A443B8D9D9D7646C6C4 /* Pods_WaterfallLayoutDemo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,10 +68,16 @@
 		004A335A29B496E0001832E5 /* girl_11.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = girl_11.jpg; sourceTree = "<group>"; };
 		004A335C29B496ED001832E5 /* girl_14.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = girl_14.jpg; sourceTree = "<group>"; };
 		004A335E29B496F2001832E5 /* girl_10.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = girl_10.jpg; sourceTree = "<group>"; };
-		004A336329B4ACD3001832E5 /* Girl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Girl.swift; sourceTree = "<group>"; };
-		004A336529B4ACDE001832E5 /* GirlCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GirlCell.swift; sourceTree = "<group>"; };
 		004A336729B4B909001832E5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		3EDD8F9D365ECC2A11902F16 /* libPods-WaterfallLayoutDemo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WaterfallLayoutDemo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AF669AC2A30C3CA0059022D /* BrowseImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BrowseImageView.swift; sourceTree = "<group>"; };
+		1AF669AE2A30C3D70059022D /* WaterfallCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WaterfallCell.swift; sourceTree = "<group>"; };
+		1AF669B02A30C3E00059022D /* WaterfallModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WaterfallModel.swift; sourceTree = "<group>"; };
+		1AF669B22A30C3E50059022D /* WaterfallStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WaterfallStore.swift; sourceTree = "<group>"; };
+		1AF669B42A30C3EF0059022D /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		1AF669B82A30C3FF0059022D /* JPBlurAnimationView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JPBlurAnimationView.swift; sourceTree = "<group>"; };
+		1AF669BA2A30C3FF0059022D /* JPBlurView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JPBlurView.swift; sourceTree = "<group>"; };
+		1AF669BF2A30CD8F0059022D /* ScreenRotator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScreenRotator.swift; sourceTree = "<group>"; };
+		4A586A443B8D9D9D7646C6C4 /* Pods_WaterfallLayoutDemo.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WaterfallLayoutDemo.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D881B2E567D36628DBD6873 /* Pods-WaterfallLayoutDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WaterfallLayoutDemo.release.xcconfig"; path = "Target Support Files/Pods-WaterfallLayoutDemo/Pods-WaterfallLayoutDemo.release.xcconfig"; sourceTree = "<group>"; };
 		BC5597B75565FB75F4D00A82 /* Pods-WaterfallLayoutDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WaterfallLayoutDemo.debug.xcconfig"; path = "Target Support Files/Pods-WaterfallLayoutDemo/Pods-WaterfallLayoutDemo.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -75,7 +87,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				335B22EC5872A60F078A8B89 /* libPods-WaterfallLayoutDemo.a in Frameworks */,
+				9D927CD912BE5FD64E571033 /* Pods_WaterfallLayoutDemo.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,10 +118,14 @@
 			children = (
 				004A325A29B477E8001832E5 /* AppDelegate.swift */,
 				004A325C29B477E8001832E5 /* SceneDelegate.swift */,
+				1AF669BF2A30CD8F0059022D /* ScreenRotator.swift */,
 				004A325E29B477E8001832E5 /* ViewController.swift */,
+				1AF669B42A30C3EF0059022D /* Extensions.swift */,
 				004A336229B4ACB8001832E5 /* WaterfallLayout */,
-				004A336029B4ACA3001832E5 /* Model */,
+				004A336029B4ACA3001832E5 /* Data */,
 				004A336129B4ACAA001832E5 /* Cell */,
+				1AF669BE2A30C4580059022D /* Browse */,
+				1AF669B62A30C3FF0059022D /* JPBlurView */,
 				004A333829B49632001832E5 /* Pictures */,
 				004A334F29B4963D001832E5 /* Supporting Files */,
 			);
@@ -151,18 +167,19 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		004A336029B4ACA3001832E5 /* Model */ = {
+		004A336029B4ACA3001832E5 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				004A336329B4ACD3001832E5 /* Girl.swift */,
+				1AF669B22A30C3E50059022D /* WaterfallStore.swift */,
+				1AF669B02A30C3E00059022D /* WaterfallModel.swift */,
 			);
-			path = Model;
+			path = Data;
 			sourceTree = "<group>";
 		};
 		004A336129B4ACAA001832E5 /* Cell */ = {
 			isa = PBXGroup;
 			children = (
-				004A336529B4ACDE001832E5 /* GirlCell.swift */,
+				1AF669AE2A30C3D70059022D /* WaterfallCell.swift */,
 			);
 			path = Cell;
 			sourceTree = "<group>";
@@ -175,10 +192,27 @@
 			path = WaterfallLayout;
 			sourceTree = "<group>";
 		};
+		1AF669B62A30C3FF0059022D /* JPBlurView */ = {
+			isa = PBXGroup;
+			children = (
+				1AF669BA2A30C3FF0059022D /* JPBlurView.swift */,
+				1AF669B82A30C3FF0059022D /* JPBlurAnimationView.swift */,
+			);
+			path = JPBlurView;
+			sourceTree = "<group>";
+		};
+		1AF669BE2A30C4580059022D /* Browse */ = {
+			isa = PBXGroup;
+			children = (
+				1AF669AC2A30C3CA0059022D /* BrowseImageView.swift */,
+			);
+			path = Browse;
+			sourceTree = "<group>";
+		};
 		C99C7948F97EB4D5AF0B9E7A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				3EDD8F9D365ECC2A11902F16 /* libPods-WaterfallLayoutDemo.a */,
+				4A586A443B8D9D9D7646C6C4 /* Pods_WaterfallLayoutDemo.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -203,6 +237,7 @@
 				004A325329B477E8001832E5 /* Sources */,
 				004A325429B477E8001832E5 /* Frameworks */,
 				004A325529B477E8001832E5 /* Resources */,
+				CC094013F10FC92C9365883D /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -299,6 +334,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		CC094013F10FC92C9365883D /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WaterfallLayoutDemo/Pods-WaterfallLayoutDemo-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-WaterfallLayoutDemo/Pods-WaterfallLayoutDemo-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-WaterfallLayoutDemo/Pods-WaterfallLayoutDemo-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -306,12 +358,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				004A336429B4ACD3001832E5 /* Girl.swift in Sources */,
+				1AF669AF2A30C3D70059022D /* WaterfallCell.swift in Sources */,
+				1AF669C02A30CD8F0059022D /* ScreenRotator.swift in Sources */,
+				1AF669BB2A30C4000059022D /* JPBlurAnimationView.swift in Sources */,
+				1AF669BC2A30C4000059022D /* JPBlurView.swift in Sources */,
+				1AF669B32A30C3E50059022D /* WaterfallStore.swift in Sources */,
 				004A333729B4958C001832E5 /* WaterfallLayout.swift in Sources */,
 				004A325F29B477E8001832E5 /* ViewController.swift in Sources */,
+				1AF669AD2A30C3CA0059022D /* BrowseImageView.swift in Sources */,
 				004A325B29B477E8001832E5 /* AppDelegate.swift in Sources */,
 				004A325D29B477E8001832E5 /* SceneDelegate.swift in Sources */,
-				004A336629B4ACDE001832E5 /* GirlCell.swift in Sources */,
+				1AF669B12A30C3E00059022D /* WaterfallModel.swift in Sources */,
+				1AF669B52A30C3EF0059022D /* Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

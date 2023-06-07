@@ -12,18 +12,14 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var segmentedControl: UISegmentedControl!
     
-    var colCount = 4
-    
-    var girls: [Girl] = []
-    
     lazy var collectionView: UICollectionView = {
         let waterfallLayout = WaterfallLayout()
         waterfallLayout.delegate = self
         
-        waterfallLayout.asyncUpdateLayout(itemTotal: girls.count) { [weak self] index, itemWidth in
+        waterfallLayout.asyncUpdateLayout(itemTotal: models.count) { [weak self] index, itemWidth in
             guard let self = self else { return 1 }
-            let girl = self.girls[index]
-            return itemWidth / girl.whRatio
+            let model = self.models[index]
+            return itemWidth * (model.image.size.height / model.image.size.width)
         } completion: { [weak self] in
             guard let self = self else { return }
             UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.88, initialSpringVelocity: 1) {
@@ -32,7 +28,6 @@ class ViewController: UIViewController {
                 }
             }
         }
-
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: waterfallLayout)
         collectionView.contentInsetAdjustmentBehavior = .never
@@ -42,10 +37,16 @@ class ViewController: UIViewController {
         collectionView.alwaysBounceVertical = true
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.register(GirlCell.self, forCellWithReuseIdentifier: "cell")
+        collectionView.register(WaterfallCell.self, forCellWithReuseIdentifier: "cell")
         
         return collectionView
     }()
+    
+    var colCount = 4
+    
+    var models: [WaterfallModel] = []
+    
+    var isAppear: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,9 +56,32 @@ class ViewController: UIViewController {
         collectionView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
+        
+        WaterfallStore.loadDone = { [weak self] in
+            guard let self = self else { return }
+            self.models = WaterfallStore.models.shuffled()
+            self.animateUpdate { collectionView in
+                collectionView.reloadSections(IndexSet(integer: 0))
+            }
+        }
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard !isAppear else { return }
+        isAppear = true
+        WaterfallStore.loadData()
+    }
+    
+    deinit {
+        WaterfallStore.loadDone = nil
+    }
+}
+
+extension ViewController {
     @IBAction func chooseColCount(_ sender: Any) {
+        guard WaterfallStore.isLoaded else { return }
+        
         let alertCtr = UIAlertController(title: "选择列数", message: nil, preferredStyle: .actionSheet)
         for i in 1...5 {
             alertCtr.addAction(UIAlertAction(title: "\(i)列", style: .default, handler: { _ in
@@ -73,32 +97,21 @@ class ViewController: UIViewController {
     }
     
     @IBAction func reloadAll(_ sender: Any) {
-        DispatchQueue.global().async {
-            let kGirls = Girl.fetchRandomList()
-            DispatchQueue.main.sync { [weak self] in
-                guard let self = self else { return }
-                self.girls = kGirls
-                self.animateUpdate { collectionView in
-                    collectionView.reloadSections(IndexSet(integer: 0))
-                }
-            }
-        }
+        WaterfallStore.loadData()
     }
     
     @IBAction func addArray(_ sender: Any) {
-        DispatchQueue.global().async {
-            let kGirls = Girl.fetchRandomList()
-            DispatchQueue.main.sync { [weak self] in
-                guard let self = self else { return }
-                var indexPaths: [IndexPath] = []
-                for i in 0 ..< kGirls.count {
-                    indexPaths.append(IndexPath(item: i + self.girls.count, section: 0))
-                }
-                self.girls += kGirls
-                self.animateUpdate { collectionView in
-                    collectionView.insertItems(at: indexPaths)
-                }
-            }
+        guard WaterfallStore.isLoaded else { return }
+        
+        let addModels = WaterfallStore.models.shuffled()
+        var indexPaths: [IndexPath] = []
+        for i in 0 ..< addModels.count {
+            indexPaths.append(IndexPath(item: i + models.count, section: 0))
+        }
+        
+        models += addModels
+        animateUpdate { collectionView in
+            collectionView.insertItems(at: indexPaths)
         }
     }
 }
@@ -115,30 +128,34 @@ extension ViewController {
 
 extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        girls.count
+        models.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! GirlCell
-        cell.girl = girls[indexPath.item]
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! WaterfallCell
+        cell.model = models[indexPath.item]
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        guard WaterfallStore.isLoaded else { return }
+        
+        collectionView.setContentOffset(collectionView.contentOffset, animated: true)
+        
         switch segmentedControl.selectedSegmentIndex {
         // 增
         case 0:
-            girls.insert(Girl.fetchRandomOne(), at: indexPath.item)
+            models.insert(WaterfallStore.models.randomElement()!, at: indexPath.item)
             animateUpdate { $0.insertItems(at: [indexPath]) }
             
         // 删
         case 1:
-            girls.remove(at: indexPath.item)
+            models.remove(at: indexPath.item)
             animateUpdate { $0.deleteItems(at: [indexPath]) }
             
         // 改
         case 2:
-            girls[indexPath.item] = Girl.fetchRandomOne()
+            models[indexPath.item] = WaterfallStore.models.randomElement()!
             animateUpdate { $0.reloadItems(at: [indexPath]) }
             
         default:
@@ -149,25 +166,18 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
 
 extension ViewController: WaterfallLayoutDelegate {
     func waterfallLayout(_ waterfallLayout: WaterfallLayout, heightForItemAtIndex index: Int, itemWidth: CGFloat) -> CGFloat {
-        var girl = girls[index]
-        if girl.cellSize.width != itemWidth {
-            girl.cellSize = CGSize(width: itemWidth, height: itemWidth / girl.whRatio)
-            girls[index] = girl
+        let model = models[index]
+        if model.cellSize.width != itemWidth {
+            model.resetCellSize(for: itemWidth)
         }
-        return girl.cellSize.height
+        return model.cellSize.height
     }
     
-    func colCountInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> Int {
-        colCount
-    }
+    func colCountInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> Int { colCount }
     
-    func colMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat {
-        5
-    }
+    func colMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat { 5 }
     
-    func rowMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat {
-        5
-    }
+    func rowMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat { 5 }
     
     func edgeInsetsInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> UIEdgeInsets {
         var safeAreaInsets: UIEdgeInsets = UIApplication.shared.keyWindow?.safeAreaInsets ?? .zero
