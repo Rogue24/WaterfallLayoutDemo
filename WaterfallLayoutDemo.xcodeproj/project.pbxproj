@@ -94,6 +94,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		002769453078986E00F30AE2 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				1AF669B42A30C3EF0059022D /* Extensions.swift */,
+				1AF669BF2A30CD8F0059022D /* ScreenRotator.swift */,
+				1AF669B62A30C3FF0059022D /* JPBlurView */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
 		004A324E29B477E8001832E5 = {
 			isa = PBXGroup;
 			children = (
@@ -118,14 +128,12 @@
 			children = (
 				004A325A29B477E8001832E5 /* AppDelegate.swift */,
 				004A325C29B477E8001832E5 /* SceneDelegate.swift */,
-				1AF669BF2A30CD8F0059022D /* ScreenRotator.swift */,
 				004A325E29B477E8001832E5 /* ViewController.swift */,
-				1AF669B42A30C3EF0059022D /* Extensions.swift */,
 				004A336229B4ACB8001832E5 /* WaterfallLayout */,
 				004A336029B4ACA3001832E5 /* Data */,
 				004A336129B4ACAA001832E5 /* Cell */,
 				1AF669BE2A30C4580059022D /* Browse */,
-				1AF669B62A30C3FF0059022D /* JPBlurView */,
+				002769453078986E00F30AE2 /* Utilities */,
 				004A333829B49632001832E5 /* Pictures */,
 				004A334F29B4963D001832E5 /* Supporting Files */,
 			);
