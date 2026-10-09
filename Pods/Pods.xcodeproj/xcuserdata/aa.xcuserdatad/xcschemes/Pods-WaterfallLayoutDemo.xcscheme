@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1300"
+   LastUpgradeVersion = "1600"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "CAF52B7AFEE1FF1DA58EFED27142A698"
-               BuildableName = "libPods-WaterfallLayoutDemo.a"
+               BuildableName = "Pods_WaterfallLayoutDemo.framework"
                BlueprintName = "Pods-WaterfallLayoutDemo"
                ReferencedContainer = "container:Pods.xcodeproj">
             </BuildableReference>
