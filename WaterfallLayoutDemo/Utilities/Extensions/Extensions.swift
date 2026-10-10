@@ -9,7 +9,7 @@ import UIKit
 
 extension UIApplication {
     /// Main Window
-    @objc static var fa_window: UIWindow? {
+    @objc static var jp_window: UIWindow? {
         shared.jp_window
     }
     
