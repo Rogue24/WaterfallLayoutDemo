@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  HomeViewController.swift
 //  WaterfallLayoutDemo
 //
 //  Created by aa on 2023/3/5.
@@ -8,14 +8,10 @@
 import UIKit
 import SnapKit
 
-class ViewController: UIViewController {
-    
-    @IBOutlet weak var segmentedControl: UISegmentedControl!
-    
-    lazy var collectionView: UICollectionView = {
+class HomeViewController: UIViewController {
+    private lazy var collectionView: UICollectionView = {
         let waterfallLayout = WaterfallLayout()
         waterfallLayout.delegate = self
-        
         waterfallLayout.asyncUpdateLayout(itemTotal: models.count) { [weak self] index, itemWidth in
             guard let self = self else { return 1 }
             let model = self.models[index]
@@ -38,19 +34,19 @@ class ViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.register(WaterfallCell.self, forCellWithReuseIdentifier: "cell")
-        
         return collectionView
     }()
     
-    var colCount = 4
+    private var colCount = 4
     
-    var models: [WaterfallModel] = []
+    private var models: [WaterfallModel] = []
     
-    var isAppear: Bool = false
+    private var isAppear: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "WaterfallLayout_Demo"
+        view.backgroundColor = .systemBackground
         
         view.insertSubview(collectionView, at: 0)
         collectionView.snp.makeConstraints {
@@ -76,47 +72,67 @@ class ViewController: UIViewController {
     deinit {
         WaterfallStore.loadDone = nil
     }
+    
+//    override func viewDidLayoutSubviews() {
+//        super.viewDidLayoutSubviews()
+//        print("jp_log *** HomeVC ------- viewDidLayoutSubviews:")
+//        print("jp_log *** HomeVC size: \(view.frame.size), safeAreaInsets: \(view.safeAreaInsets))")
+//        print("jp_log *** HomeVC layoutMargins: \(view.layoutMargins)")
+//        print("jp_log *** HomeVC directionalLayoutMargins: \(view.directionalLayoutMargins)")
+//        print("jp_log *** HomeVC systemMinimumLayoutMargins: \(self.systemMinimumLayoutMargins))")
+//        print("jp_log *** HomeVC ------- \(lookTime())")
+//    }
+//    
+//    override func viewSafeAreaInsetsDidChange() {
+//        super.viewSafeAreaInsetsDidChange()
+//        print("jp_log *** HomeVC viewSafeAreaInsetsDidChange: \(view.frame.size), \(view.safeAreaInsets) --- \(lookTime())")
+//    }
+//    
+//    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+//        super.viewWillTransition(to: size, with: coordinator)
+//        print("jp_log *** HomeVC.transitionDuration ------- \(coordinator.transitionDuration)")
+//    }
 }
 
-extension ViewController {
-    @IBAction func chooseColCount(_ sender: Any) {
-        guard WaterfallStore.isLoaded else { return }
-        
-        let alertCtr = UIAlertController(title: "选择列数", message: nil, preferredStyle: .actionSheet)
-        for i in 1...5 {
-            alertCtr.addAction(UIAlertAction(title: "\(i)列", style: .default, handler: { _ in
-                guard self.colCount != i else { return }
-                self.colCount = i
-                self.animateUpdate { collectionView in
-                    collectionView.reloadSections(IndexSet(integer: 0))
-                }
-            }))
-        }
-        alertCtr.addAction(UIAlertAction(title: "取消", style: .cancel))
-        present(alertCtr, animated: true)
-    }
-    
-    @IBAction func reloadAll(_ sender: Any) {
-        WaterfallStore.loadData()
-    }
-    
-    @IBAction func addArray(_ sender: Any) {
-        guard WaterfallStore.isLoaded else { return }
-        
-        let addModels = WaterfallStore.models.shuffled()
-        var indexPaths: [IndexPath] = []
-        for i in 0 ..< addModels.count {
-            indexPaths.append(IndexPath(item: i + models.count, section: 0))
-        }
-        
-        models += addModels
-        animateUpdate { collectionView in
-            collectionView.insertItems(at: indexPaths)
-        }
-    }
-}
+//extension HomeViewController {
+//    @IBAction func chooseColCount(_ sender: Any) {
+//        guard WaterfallStore.isLoaded else { return }
+//        
+//        let alertCtr = UIAlertController(title: "选择列数", message: nil, preferredStyle: .actionSheet)
+//        for i in 1...5 {
+//            alertCtr.addAction(UIAlertAction(title: "\(i)列", style: .default, handler: { _ in
+//                guard self.colCount != i else { return }
+//                self.colCount = i
+//                self.animateUpdate { collectionView in
+//                    collectionView.reloadSections(IndexSet(integer: 0))
+//                }
+//            }))
+//        }
+//        alertCtr.addAction(UIAlertAction(title: "取消", style: .cancel))
+//        present(alertCtr, animated: true)
+//    }
+//    
+//    @IBAction func reloadAll(_ sender: Any) {
+//        WaterfallStore.loadData()
+//    }
+//    
+//    @IBAction func addArray(_ sender: Any) {
+//        guard WaterfallStore.isLoaded else { return }
+//        
+//        let addModels = WaterfallStore.models.shuffled()
+//        var indexPaths: [IndexPath] = []
+//        for i in 0 ..< addModels.count {
+//            indexPaths.append(IndexPath(item: i + models.count, section: 0))
+//        }
+//        
+//        models += addModels
+//        animateUpdate { collectionView in
+//            collectionView.insertItems(at: indexPaths)
+//        }
+//    }
+//}
 
-extension ViewController {
+private extension HomeViewController {
     func animateUpdate(_ updateHandle: @escaping (_ collectionView: UICollectionView) -> ()) {
         UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.88, initialSpringVelocity: 1) {
             self.collectionView.performBatchUpdates {
@@ -126,7 +142,7 @@ extension ViewController {
     }
 }
 
-extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         models.count
     }
@@ -142,29 +158,29 @@ extension ViewController: UICollectionViewDataSource, UICollectionViewDelegate {
         
         collectionView.setContentOffset(collectionView.contentOffset, animated: true)
         
-        switch segmentedControl.selectedSegmentIndex {
-        // 增
-        case 0:
-            models.insert(WaterfallStore.models.randomElement()!, at: indexPath.item)
-            animateUpdate { $0.insertItems(at: [indexPath]) }
-            
-        // 删
-        case 1:
-            models.remove(at: indexPath.item)
-            animateUpdate { $0.deleteItems(at: [indexPath]) }
-            
-        // 改
-        case 2:
-            models[indexPath.item] = WaterfallStore.models.randomElement()!
-            animateUpdate { $0.reloadItems(at: [indexPath]) }
-            
-        default:
-            break
-        }
+//        switch segmentedControl.selectedSegmentIndex {
+//        // 增
+//        case 0:
+//            models.insert(WaterfallStore.models.randomElement()!, at: indexPath.item)
+//            animateUpdate { $0.insertItems(at: [indexPath]) }
+//            
+//        // 删
+//        case 1:
+//            models.remove(at: indexPath.item)
+//            animateUpdate { $0.deleteItems(at: [indexPath]) }
+//            
+//        // 改
+//        case 2:
+//            models[indexPath.item] = WaterfallStore.models.randomElement()!
+//            animateUpdate { $0.reloadItems(at: [indexPath]) }
+//            
+//        default:
+//            break
+//        }
     }
 }
 
-extension ViewController: WaterfallLayoutDelegate {
+extension HomeViewController: WaterfallLayoutDelegate {
     func waterfallLayout(_ waterfallLayout: WaterfallLayout, heightForItemAtIndex index: Int, itemWidth: CGFloat) -> CGFloat {
         let model = models[index]
         if model.cellSize.width != itemWidth {
@@ -180,10 +196,10 @@ extension ViewController: WaterfallLayoutDelegate {
     func rowMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat { 5 }
     
     func edgeInsetsInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> UIEdgeInsets {
-        var safeAreaInsets: UIEdgeInsets = UIApplication.shared.keyWindow?.safeAreaInsets ?? .zero
-        safeAreaInsets.top += 44 + 5
+        var safeAreaInsets = Env.safeAreaInsets
+        safeAreaInsets.top += 5
         safeAreaInsets.left += 5
-        safeAreaInsets.bottom += 49 + 5
+        safeAreaInsets.bottom += 5
         safeAreaInsets.right += 5
         return safeAreaInsets
     }
