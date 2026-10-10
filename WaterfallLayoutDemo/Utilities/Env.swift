@@ -362,7 +362,7 @@ extension Env {
             hingeRadian = 0
             hingeStatus = .unknown
         }
-//        print("nrtnrtweg 铰链角度：\(hingeAngle)")
+//        print("jp_log 铰链角度：\(hingeAngle)")
     }
     
     static private(set) var hingeRadian: CGFloat = 0
