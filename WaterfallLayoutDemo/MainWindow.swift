@@ -7,7 +7,7 @@
 
 import UIKit
 
-class MainWindow: UIWindow {
+final class MainWindow: UIWindow {
     override func safeAreaInsetsDidChange() {
         super.safeAreaInsetsDidChange()
 //        print("jp_log *** MainWindow.safeAreaInsetsDidChange: \(frame.size), \(safeAreaInsets) --- \(lookTime())")

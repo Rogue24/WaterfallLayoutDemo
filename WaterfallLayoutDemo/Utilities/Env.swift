@@ -33,6 +33,10 @@ enum Env {
     
     static var safeAreaWithTabBarInsets: UIEdgeInsets {
         var safeAreaInsets = self.safeAreaInsets
+        guard isDuo else {
+            safeAreaInsets.bottom += tabBarBaseH
+            return safeAreaInsets
+        }
         switch displayMode {
         case .innerSplitLeft:
             safeAreaInsets.left = 84
@@ -46,6 +50,9 @@ enum Env {
     
     static var safeAreaWithTopMarginInsets: UIEdgeInsets {
         var safeAreaInsets = self.safeAreaInsets
+        guard isDuo else {
+            return safeAreaInsets
+        }
         switch displayMode {
         case .innerPortraitFull:
             break
@@ -57,6 +64,10 @@ enum Env {
     
     static var safeAreaFullInsets: UIEdgeInsets {
         var safeAreaInsets = self.safeAreaInsets
+        guard isDuo else {
+            safeAreaInsets.bottom += tabBarBaseH
+            return safeAreaInsets
+        }
         switch displayMode {
         case .innerSplitLeft:
             safeAreaInsets.top = 24
@@ -381,6 +392,9 @@ extension Env {
     
     /// tabBar基本高度/宽度
     static var tabBarSize: CGFloat {
+        guard isDuo else {
+            return tabBarBaseH
+        }
         switch displayMode {
         case .innerPortraitFull:
             return 49
@@ -390,6 +404,9 @@ extension Env {
     }
     /// tabBar+安全间距
     static var tabBarInset: CGFloat {
+        guard isDuo else {
+            return tabBarFullH
+        }
         switch displayMode {
         case .innerPortraitFull:
             return 83 // 49 + 34
@@ -400,6 +417,9 @@ extension Env {
     
     /// 顶部基本间距
     static var topMargin: CGFloat {
+        guard isDuo else {
+            return 20
+        }
         switch displayMode {
         case .innerPortraitFull:
             return 82
