@@ -114,8 +114,21 @@ extension Env {
         if max(screenBounds.width, screenBounds.height) == max(sceneBounds.width, sceneBounds.height) {
             if isHorRegular && isVerRegular { // 内屏铺满 Regular × Regular
                 displayMode = isLandscapeScene ? .innerLandscapeFull : .innerPortraitFull
-            } else { // 外屏竖屏
-                displayMode = .outerPortrait
+            } else { // 外屏
+                let orientation: UIInterfaceOrientation
+                if #available(iOS 26.0, *) {
+                    orientation = windowScene.effectiveGeometry.interfaceOrientation
+                } else {
+                    orientation = windowScene.interfaceOrientation
+                }
+                switch orientation {
+                case .landscapeLeft:
+                    displayMode = .outerLandscapeLeft
+                case .landscapeRight:
+                    displayMode = .outerLandscapeRight
+                default:
+                    displayMode = .outerPortrait
+                }
             }
         } else { // 内屏分屏
 //            if #available(iOS 27.1, *) {
@@ -200,8 +213,21 @@ extension Env {
             if isHorRegular && isVerRegular { // 内屏铺满 Regular × Regular
                 let currentIsLandscape = sceneBounds.width > sceneBounds.height
                 displayMode = currentIsLandscape ? .innerLandscapeFull : .innerPortraitFull
-            } else { // 外屏竖屏
-                displayMode = .outerPortrait
+            } else { // 外屏
+                let orientation: UIInterfaceOrientation
+                if #available(iOS 26.0, *) {
+                    orientation = windowScene.effectiveGeometry.interfaceOrientation
+                } else {
+                    orientation = windowScene.interfaceOrientation
+                }
+                switch orientation {
+                case .landscapeLeft:
+                    displayMode = .outerLandscapeLeft
+                case .landscapeRight:
+                    displayMode = .outerLandscapeRight
+                default:
+                    displayMode = .outerPortrait
+                }
             }
         } else { // 内屏分屏
 //            if #available(iOS 27.1, *) {
@@ -375,7 +401,7 @@ extension Env {
     /// 状态栏高度
     static var statusBarH: CGFloat {
         guard _statusBarH == 0 else { return _statusBarH }
-        _statusBarH = UIApplication.fa_window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
+        _statusBarH = UIApplication.jp_window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
         return _statusBarH
     }
     private static var _statusBarH: CGFloat = 0

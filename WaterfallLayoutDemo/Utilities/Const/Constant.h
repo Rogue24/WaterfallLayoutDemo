@@ -22,10 +22,12 @@ typedef NS_OPTIONS(NSUInteger, EnvUpdateOptions) {
 
 typedef NS_ENUM(NSInteger, EnvDisplayMode) {
     EnvDisplayMode_OuterPortrait = 0,
-    EnvDisplayMode_InnerLandscapeFull = 1,
-    EnvDisplayMode_InnerPortraitFull = 2,
-    EnvDisplayMode_InnerSplitLeft = 3,
-    EnvDisplayMode_InnerSplitRight = 4,
+    EnvDisplayMode_OuterLandscapeLeft = 1,
+    EnvDisplayMode_OuterLandscapeRight = 2,
+    EnvDisplayMode_InnerLandscapeFull = 3,
+    EnvDisplayMode_InnerPortraitFull = 4,
+    EnvDisplayMode_InnerSplitLeft = 5,
+    EnvDisplayMode_InnerSplitRight = 6,
 };
 
 /// The status of an individual hinge

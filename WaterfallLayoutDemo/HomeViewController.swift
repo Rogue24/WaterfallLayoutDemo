@@ -37,6 +37,8 @@ class HomeViewController: UIViewController {
         return collectionView
     }()
     
+    private let segments = NavActionSegments()
+    
     private var colCount = 4
     
     private var models: [WaterfallModel] = []
@@ -48,10 +50,8 @@ class HomeViewController: UIViewController {
         title = "WaterfallLayout_Demo"
         view.backgroundColor = .systemBackground
         
-        view.insertSubview(collectionView, at: 0)
-        collectionView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
+        setupCollectionView()
+        setupToolbar()
         
         WaterfallStore.loadDone = { [weak self] in
             guard let self = self else { return }
@@ -62,6 +62,23 @@ class HomeViewController: UIViewController {
         }
     }
     
+    deinit {
+        WaterfallStore.loadDone = nil
+    }
+    
+    private func animateUpdate(_ updateHandle: @escaping (_ collectionView: UICollectionView) -> ()) {
+        UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.88, initialSpringVelocity: 1) {
+            self.collectionView.performBatchUpdates {
+                updateHandle(self.collectionView)
+            }
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.setToolbarHidden(false, animated: animated)
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard !isAppear else { return }
@@ -69,75 +86,100 @@ class HomeViewController: UIViewController {
         WaterfallStore.loadData()
     }
     
-    deinit {
-        WaterfallStore.loadDone = nil
-    }
-    
-//    override func viewDidLayoutSubviews() {
-//        super.viewDidLayoutSubviews()
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
 //        print("jp_log *** HomeVC ------- viewDidLayoutSubviews:")
 //        print("jp_log *** HomeVC size: \(view.frame.size), safeAreaInsets: \(view.safeAreaInsets))")
 //        print("jp_log *** HomeVC layoutMargins: \(view.layoutMargins)")
 //        print("jp_log *** HomeVC directionalLayoutMargins: \(view.directionalLayoutMargins)")
 //        print("jp_log *** HomeVC systemMinimumLayoutMargins: \(self.systemMinimumLayoutMargins))")
 //        print("jp_log *** HomeVC ------- \(lookTime())")
-//    }
-//    
-//    override func viewSafeAreaInsetsDidChange() {
-//        super.viewSafeAreaInsetsDidChange()
+    }
+    
+    override func viewSafeAreaInsetsDidChange() {
+        super.viewSafeAreaInsetsDidChange()
 //        print("jp_log *** HomeVC viewSafeAreaInsetsDidChange: \(view.frame.size), \(view.safeAreaInsets) --- \(lookTime())")
-//    }
-//    
-//    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
-//        super.viewWillTransition(to: size, with: coordinator)
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: any UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
 //        print("jp_log *** HomeVC transitionDuration ------- \(coordinator.transitionDuration)")
-//    }
+    }
 }
 
-//extension HomeViewController {
-//    @IBAction func chooseColCount(_ sender: Any) {
-//        guard WaterfallStore.isLoaded else { return }
-//        
-//        let alertCtr = UIAlertController(title: "选择列数", message: nil, preferredStyle: .actionSheet)
-//        for i in 1...5 {
-//            alertCtr.addAction(UIAlertAction(title: "\(i)列", style: .default, handler: { _ in
-//                guard self.colCount != i else { return }
-//                self.colCount = i
-//                self.animateUpdate { collectionView in
-//                    collectionView.reloadSections(IndexSet(integer: 0))
-//                }
-//            }))
-//        }
-//        alertCtr.addAction(UIAlertAction(title: "取消", style: .cancel))
-//        present(alertCtr, animated: true)
-//    }
-//    
-//    @IBAction func reloadAll(_ sender: Any) {
-//        WaterfallStore.loadData()
-//    }
-//    
-//    @IBAction func addArray(_ sender: Any) {
-//        guard WaterfallStore.isLoaded else { return }
-//        
-//        let addModels = WaterfallStore.models.shuffled()
-//        var indexPaths: [IndexPath] = []
-//        for i in 0 ..< addModels.count {
-//            indexPaths.append(IndexPath(item: i + models.count, section: 0))
-//        }
-//        
-//        models += addModels
-//        animateUpdate { collectionView in
-//            collectionView.insertItems(at: indexPaths)
-//        }
-//    }
-//}
+private extension HomeViewController {
+    func setupCollectionView() {
+        view.addSubview(collectionView)
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    func setupToolbar() {
+        let colItem = UIBarButtonItem(
+            image: UIImage(systemName: "list.number"),
+            style: .plain,
+            target: self,
+            action: #selector(chooseColCount)
+        )
+        
+        let reloadItem = UIBarButtonItem(
+            barButtonSystemItem: .refresh,
+            target: self,
+            action: #selector(reloadAll)
+        )
+        
+        let addItem = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(addArray)
+        )
+        
+        let flexibleSpace = UIBarButtonItem(
+            barButtonSystemItem: .flexibleSpace,
+            target: nil,
+            action: nil
+        )
+        
+        let segItem = UIBarButtonItem(customView: segments)
+        
+        toolbarItems = [colItem, reloadItem, addItem, flexibleSpace, segItem]
+    }
+}
 
 private extension HomeViewController {
-    func animateUpdate(_ updateHandle: @escaping (_ collectionView: UICollectionView) -> ()) {
-        UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.88, initialSpringVelocity: 1) {
-            self.collectionView.performBatchUpdates {
-                updateHandle(self.collectionView)
-            }
+    @objc func chooseColCount() {
+        guard WaterfallStore.isLoaded else { return }
+        let alertCtr = UIAlertController(title: "选择列数", message: nil, preferredStyle: .actionSheet)
+        for i in 1...5 {
+            alertCtr.addAction(UIAlertAction(title: "\(i)列", style: .default, handler: { _ in
+                guard self.colCount != i else { return }
+                self.colCount = i
+                self.animateUpdate { collectionView in
+                    collectionView.reloadSections(IndexSet(integer: 0))
+                }
+            }))
+        }
+        alertCtr.addAction(UIAlertAction(title: "取消", style: .cancel))
+        present(alertCtr, animated: true)
+    }
+    
+    @objc func reloadAll() {
+        WaterfallStore.loadData()
+    }
+    
+    @objc func addArray() {
+        guard WaterfallStore.isLoaded else { return }
+        
+        let addModels = WaterfallStore.models.shuffled()
+        var indexPaths: [IndexPath] = []
+        for i in 0 ..< addModels.count {
+            indexPaths.append(IndexPath(item: i + models.count, section: 0))
+        }
+        
+        models += addModels
+        animateUpdate { collectionView in
+            collectionView.insertItems(at: indexPaths)
         }
     }
 }
@@ -158,25 +200,22 @@ extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelega
         
         collectionView.setContentOffset(collectionView.contentOffset, animated: true)
         
-//        switch segmentedControl.selectedSegmentIndex {
-//        // 增
-//        case 0:
-//            models.insert(WaterfallStore.models.randomElement()!, at: indexPath.item)
-//            animateUpdate { $0.insertItems(at: [indexPath]) }
-//            
-//        // 删
-//        case 1:
-//            models.remove(at: indexPath.item)
-//            animateUpdate { $0.deleteItems(at: [indexPath]) }
-//            
-//        // 改
-//        case 2:
-//            models[indexPath.item] = WaterfallStore.models.randomElement()!
-//            animateUpdate { $0.reloadItems(at: [indexPath]) }
-//            
-//        default:
-//            break
-//        }
+        switch segments.selectedIndex {
+        // 增
+        case 0:
+            models.insert(WaterfallStore.models.randomElement()!, at: indexPath.item)
+            animateUpdate { $0.insertItems(at: [indexPath]) }
+        // 删
+        case 1:
+            models.remove(at: indexPath.item)
+            animateUpdate { $0.deleteItems(at: [indexPath]) }
+        // 改
+        case 2:
+            models[indexPath.item] = WaterfallStore.models.randomElement()!
+            animateUpdate { $0.reloadItems(at: [indexPath]) }
+        default:
+            break
+        }
     }
 }
 
@@ -189,11 +228,17 @@ extension HomeViewController: WaterfallLayoutDelegate {
         return model.cellSize.height
     }
     
-    func colCountInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> Int { colCount }
+    func colCountInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> Int {
+        colCount
+    }
     
-    func colMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat { 5 }
+    func colMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat {
+        5
+    }
     
-    func rowMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat { 5 }
+    func rowMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat {
+        5
+    }
     
     func edgeInsetsInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> UIEdgeInsets {
         var safeAreaInsets = Env.safeAreaInsets
@@ -202,5 +247,81 @@ extension HomeViewController: WaterfallLayoutDelegate {
         safeAreaInsets.bottom += 5
         safeAreaInsets.right += 5
         return safeAreaInsets
+    }
+}
+
+
+
+
+
+final private class NavActionSegments: UIView {
+    private let titles = ["增", "删", "改"]
+    private var buttons: [UIButton] = []
+    
+    private(set) var selectedIndex = 0
+    var onSelect: ((Int) -> Void)?
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .clear
+        
+        // 给内容留出边距，不自行绘制玻璃背景
+        layoutMargins = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
+        
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.distribution = .fillEqually
+        stack.spacing = 0
+        for (index, title) in titles.enumerated() {
+            // .custom 不添加按钮自己的系统背景样式
+            let button = UIButton(type: .system)
+            button.tag = index
+            button.setTitle(title, for: .normal)
+            button.backgroundColor = .clear
+            button.addTarget(
+                self,
+                action: #selector(buttonTapped(_:)),
+                for: .touchUpInside
+            )
+            stack.addArrangedSubview(button)
+            buttons.append(button)
+        }
+        addSubview(stack)
+        stack.snp.makeConstraints { make in
+            make.edges.equalTo(self.layoutMarginsGuide)
+        }
+        
+        updateAppearance(animated: false)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override var intrinsicContentSize: CGSize {
+        CGSize(width: 132, height: 36)
+    }
+    
+    @objc private func buttonTapped(_ sender: UIButton) {
+        selectedIndex = sender.tag
+        updateAppearance(animated: true)
+        onSelect?(selectedIndex)
+    }
+    
+    private func updateAppearance(animated: Bool) {
+        for (index, button) in buttons.enumerated() {
+            let selected = index == selectedIndex
+            button.setTitleColor(
+                selected ? .label : .secondaryLabel,
+                for: .normal
+            )
+            button.titleLabel?.font = .systemFont(
+                ofSize: 17,
+                weight: selected ? .semibold : .regular
+            )
+            if animated {
+                UIView.transition(with: button, duration: 0.12, options: .transitionCrossDissolve) {}
+            }
+        }
     }
 }

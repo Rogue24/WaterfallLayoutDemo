@@ -103,6 +103,10 @@ extension EnvUpdateOptions {
 extension EnvDisplayMode {
     var jp_log: String {
         switch self {
+        case .outerLandscapeLeft:
+            return "outerLandscapeLeft_外屏横屏向左"
+        case .outerLandscapeRight:
+            return "outerLandscapeRight_外屏横屏向右"
         case .innerLandscapeFull:
             return "innerLandscapeFull_内屏横屏铺满"
         case .innerSplitLeft:
@@ -112,13 +116,13 @@ extension EnvDisplayMode {
         case .innerPortraitFull:
             return "innerPortraitFull_内屏竖屏铺满"
         default:
-            return "outerPortrait_外屏竖向"
+            return "outerPortrait_外屏竖屏"
         }
     }
     
     var isOuter: Bool {
         switch self {
-        case .outerPortrait:
+        case .outerPortrait, .outerLandscapeLeft, .outerLandscapeRight:
             return true
         default:
             return false
@@ -127,7 +131,7 @@ extension EnvDisplayMode {
     
     var isInner: Bool {
         switch self {
-        case .outerPortrait:
+        case .outerPortrait, .outerLandscapeLeft, .outerLandscapeRight:
             return false
         default:
             return true
@@ -145,7 +149,7 @@ extension EnvDisplayMode {
     
     var isLandscape: Bool {
         switch self {
-        case .innerLandscapeFull:
+        case .outerLandscapeLeft, .outerLandscapeRight, .innerLandscapeFull:
             return true
         default:
             return false
