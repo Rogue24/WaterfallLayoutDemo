@@ -17,6 +17,14 @@ extension UIApplication {
     @objc static var jp_keyWindow: UIWindow? {
         shared.jp_keyWindow
     }
+    
+    /// App状态
+    /// - .active: 正在前台，且处于活跃状态（正在接收用户交互）
+    /// - .inactive: 处于前台，但未接收交互（例如：处于多任务切换界面、有电话呼入、或处于前台过渡状态）
+    /// - .background: 已经进入后台
+    @objc static var jp_appState: UIApplication.State {
+        shared.applicationState
+    }
 }
 
 extension UIApplication {

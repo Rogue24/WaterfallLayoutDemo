@@ -300,7 +300,7 @@ extension Env {
         // ---------- 若变化则广播 ----------
         guard !options.isEmpty else { return }
         // 内外屏切换没有动画，屏幕旋转才有动画
-        let transitionDuration: TimeInterval = isRotated ? 0.3 : 0
+        let transitionDuration: TimeInterval = (isRotated && UIApplication.jp_appState == .active) ? 0.3 : 0
         NotificationCenter.jp.post(key: .EnvSceneDidChange, userInfo: [
             "options": options.rawValue,
             "transitionDuration": transitionDuration,
