@@ -43,6 +43,35 @@ class HomeViewController: UIViewController {
     
     private var models: [WaterfallModel] = []
     
+    private var sceneSize: CGSize = Env.sceneSize
+    private var safeAreaInsets: UIEdgeInsets = Env.safeAreaInsets
+    
+    private var isObservingSceneChanges: Bool = false {
+        didSet {
+            guard isObservingSceneChanges != oldValue else { return }
+            if isObservingSceneChanges {
+                startObservingSceneChanges()
+            } else {
+                stopObservingSceneChanges()
+            }
+        }
+    }
+    
+    private var contentInsets: UIEdgeInsets {
+        var safeAreaInsets = self.safeAreaInsets
+        safeAreaInsets.top = view.layoutMargins.top
+        safeAreaInsets.bottom = view.layoutMargins.bottom
+        if Env.displayMode == .innerLandscapeFull, Env.isHingeActive {
+            // 横屏对折时，左右间距保持一致，让列表能居中对折
+            safeAreaInsets.left = safeAreaInsets.right
+        }
+        safeAreaInsets.top += 5
+        safeAreaInsets.left += 5
+        safeAreaInsets.bottom += 5
+        safeAreaInsets.right += 5
+        return safeAreaInsets
+    }
+    
     private var isAppear: Bool = false
     
     override func viewDidLoad() {
@@ -77,6 +106,8 @@ class HomeViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.setToolbarHidden(false, animated: animated)
+        updateLayoutIfNeeded()
+        isObservingSceneChanges = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -86,13 +117,18 @@ class HomeViewController: UIViewController {
         WaterfallStore.loadData()
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        isObservingSceneChanges = false
+    }
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 //        print("jp_log *** HomeVC ------- viewDidLayoutSubviews:")
 //        print("jp_log *** HomeVC size: \(view.frame.size), safeAreaInsets: \(view.safeAreaInsets))")
 //        print("jp_log *** HomeVC layoutMargins: \(view.layoutMargins)")
-//        print("jp_log *** HomeVC directionalLayoutMargins: \(view.directionalLayoutMargins)")
-//        print("jp_log *** HomeVC systemMinimumLayoutMargins: \(self.systemMinimumLayoutMargins))")
+////        print("jp_log *** HomeVC directionalLayoutMargins: \(view.directionalLayoutMargins)")
+////        print("jp_log *** HomeVC systemMinimumLayoutMargins: \(self.systemMinimumLayoutMargins))")
 //        print("jp_log *** HomeVC ------- \(lookTime())")
     }
     
@@ -241,87 +277,79 @@ extension HomeViewController: WaterfallLayoutDelegate {
     }
     
     func edgeInsetsInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> UIEdgeInsets {
-        var safeAreaInsets = Env.safeAreaInsets
-        safeAreaInsets.top += 5
-        safeAreaInsets.left += 5
-        safeAreaInsets.bottom += 5
-        safeAreaInsets.right += 5
-        return safeAreaInsets
+        contentInsets
     }
 }
 
-
-
-
-
-final private class NavActionSegments: UIView {
-    private let titles = ["增", "删", "改"]
-    private var buttons: [UIButton] = []
+// MARK: - Duo适配_监听场景、铰链状态变化的通知
+private extension HomeViewController {
+    func startObservingSceneChanges() {
+        NotificationCenter.jp.addObserver(
+            self,
+            selector: #selector(didReceiveEnvSceneDidChange(notification:)),
+            key: .EnvSceneDidChange
+        )
+        NotificationCenter.jp.addObserver(
+            self,
+            selector: #selector(didReceiveEnvHingeStatusDidChange(notification:)),
+            key: .EnvHingeStatusDidChange
+        )
+    }
     
-    private(set) var selectedIndex = 0
-    var onSelect: ((Int) -> Void)?
+    func stopObservingSceneChanges() {
+        NotificationCenter.jp.removeObserver(self, key: .EnvSceneDidChange)
+        NotificationCenter.jp.removeObserver(self, key: .EnvHingeStatusDidChange)
+    }
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        backgroundColor = .clear
-        
-        // 给内容留出边距，不自行绘制玻璃背景
-        layoutMargins = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
-        
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.distribution = .fillEqually
-        stack.spacing = 0
-        for (index, title) in titles.enumerated() {
-            // .custom 不添加按钮自己的系统背景样式
-            let button = UIButton(type: .system)
-            button.tag = index
-            button.setTitle(title, for: .normal)
-            button.backgroundColor = .clear
-            button.addTarget(
-                self,
-                action: #selector(buttonTapped(_:)),
-                for: .touchUpInside
-            )
-            stack.addArrangedSubview(button)
-            buttons.append(button)
+    /// 场景发生变化的通知（内外屏切换、内屏旋转、内屏全屏分屏切换、内屏左右分屏切换）
+    @objc func didReceiveEnvSceneDidChange(notification: Notification) {
+        guard let rawValue = notification.userInfo?["options"] as? UInt else { return }
+        let options = EnvUpdateOptions(rawValue: rawValue)
+        let duration = notification.userInfo?["transitionDuration"] as? TimeInterval ?? 0
+        updateLayout(options: options, duration: duration)
+    }
+    
+    /// 铰链状态发生变化的通知
+    @objc func didReceiveEnvHingeStatusDidChange(notification: Notification) {
+//        guard let userInfo = notification.userInfo,
+//              let oldRawValue = userInfo["oldStatus"] as? Int,
+//              let nowRawValue = userInfo["nowStatus"] as? Int,
+//              let oldStatus = EnvHingeStatus(rawValue: oldRawValue),
+//              let nowStatus = EnvHingeStatus(rawValue: nowRawValue)
+//        else { return }
+        guard Env.displayMode == .innerLandscapeFull else { return }
+        updateLayout(options: .safeArea, duration: 0.3)
+    }
+}
+
+// MARK: - Duo适配_更新界面布局（如果有变化）
+private extension HomeViewController {
+    private func updateLayoutIfNeeded() {
+        var options: EnvUpdateOptions = []
+        if sceneSize != Env.sceneSize {
+            options.insert(.bounds)
         }
-        addSubview(stack)
-        stack.snp.makeConstraints { make in
-            make.edges.equalTo(self.layoutMarginsGuide)
+        if safeAreaInsets != Env.safeAreaInsets {
+            options.insert(.safeArea)
+        }
+        updateLayout(options: options, duration: 0)
+    }
+    
+    func updateLayout(options: EnvUpdateOptions, duration: TimeInterval) {
+        guard !options.isEmpty else { return }
+        sceneSize = Env.sceneSize
+        safeAreaInsets = Env.safeAreaInsets
+        
+        guard duration > 0 else {
+            collectionView.collectionViewLayout.invalidateLayout()
+            collectionView.layoutIfNeeded()
+            return
         }
         
-        updateAppearance(animated: false)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    override var intrinsicContentSize: CGSize {
-        CGSize(width: 132, height: 36)
-    }
-    
-    @objc private func buttonTapped(_ sender: UIButton) {
-        selectedIndex = sender.tag
-        updateAppearance(animated: true)
-        onSelect?(selectedIndex)
-    }
-    
-    private func updateAppearance(animated: Bool) {
-        for (index, button) in buttons.enumerated() {
-            let selected = index == selectedIndex
-            button.setTitleColor(
-                selected ? .label : .secondaryLabel,
-                for: .normal
-            )
-            button.titleLabel?.font = .systemFont(
-                ofSize: 17,
-                weight: selected ? .semibold : .regular
-            )
-            if animated {
-                UIView.transition(with: button, duration: 0.12, options: .transitionCrossDissolve) {}
-            }
+        UIView.animate(withDuration: duration, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0) {
+            self.collectionView.collectionViewLayout.invalidateLayout()
+            self.collectionView.layoutIfNeeded()
         }
     }
 }
+

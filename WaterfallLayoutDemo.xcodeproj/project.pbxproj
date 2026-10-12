@@ -35,6 +35,7 @@
 		00FA52CB3078D62500FB94EF /* JP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52CA3078D62500FB94EF /* JP.swift */; };
 		00FA52D03078D8D100FB94EF /* Const.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52CF3078D8D100FB94EF /* Const.swift */; };
 		00FA52D63079F08200FB94EF /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52D53079F08200FB94EF /* MainWindow.swift */; };
+		00FA52DC307CC52D00FB94EF /* NavActionSegments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52DB307CC52D00FB94EF /* NavActionSegments.swift */; };
 		1AF669AD2A30C3CA0059022D /* BrowseImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669AC2A30C3CA0059022D /* BrowseImageView.swift */; };
 		1AF669AF2A30C3D70059022D /* WaterfallCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669AE2A30C3D70059022D /* WaterfallCell.swift */; };
 		1AF669B12A30C3E00059022D /* WaterfallModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669B02A30C3E00059022D /* WaterfallModel.swift */; };
@@ -80,6 +81,7 @@
 		00FA52CA3078D62500FB94EF /* JP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JP.swift; sourceTree = "<group>"; };
 		00FA52CF3078D8D100FB94EF /* Const.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Const.swift; sourceTree = "<group>"; };
 		00FA52D53079F08200FB94EF /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
+		00FA52DB307CC52D00FB94EF /* NavActionSegments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavActionSegments.swift; sourceTree = "<group>"; };
 		1AF669AC2A30C3CA0059022D /* BrowseImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BrowseImageView.swift; sourceTree = "<group>"; };
 		1AF669AE2A30C3D70059022D /* WaterfallCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WaterfallCell.swift; sourceTree = "<group>"; };
 		1AF669B02A30C3E00059022D /* WaterfallModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WaterfallModel.swift; sourceTree = "<group>"; };
@@ -143,6 +145,7 @@
 				004A325C29B477E8001832E5 /* SceneDelegate.swift */,
 				00FA52D53079F08200FB94EF /* MainWindow.swift */,
 				004A325E29B477E8001832E5 /* HomeViewController.swift */,
+				00FA52DB307CC52D00FB94EF /* NavActionSegments.swift */,
 				004A336229B4ACB8001832E5 /* WaterfallLayout */,
 				004A336029B4ACA3001832E5 /* Data */,
 				004A336129B4ACAA001832E5 /* Cell */,
@@ -428,6 +431,7 @@
 				004A333729B4958C001832E5 /* WaterfallLayout.swift in Sources */,
 				004A325F29B477E8001832E5 /* HomeViewController.swift in Sources */,
 				1AF669AD2A30C3CA0059022D /* BrowseImageView.swift in Sources */,
+				00FA52DC307CC52D00FB94EF /* NavActionSegments.swift in Sources */,
 				00FA52D63079F08200FB94EF /* MainWindow.swift in Sources */,
 				004A325B29B477E8001832E5 /* AppDelegate.swift in Sources */,
 				00FA52C73078D5E200FB94EF /* NotificationCenter+Extension.swift in Sources */,
