@@ -144,8 +144,7 @@
 				004A325A29B477E8001832E5 /* AppDelegate.swift */,
 				004A325C29B477E8001832E5 /* SceneDelegate.swift */,
 				00FA52D53079F08200FB94EF /* MainWindow.swift */,
-				004A325E29B477E8001832E5 /* HomeViewController.swift */,
-				00FA52DB307CC52D00FB94EF /* NavActionSegments.swift */,
+				00FA52DD307CF7A200FB94EF /* Home */,
 				004A336229B4ACB8001832E5 /* WaterfallLayout */,
 				004A336029B4ACA3001832E5 /* Data */,
 				004A336129B4ACAA001832E5 /* Cell */,
@@ -250,6 +249,15 @@
 				00FA52C33078CA3E00FB94EF /* Constant.h */,
 			);
 			path = Const;
+			sourceTree = "<group>";
+		};
+		00FA52DD307CF7A200FB94EF /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				004A325E29B477E8001832E5 /* HomeViewController.swift */,
+				00FA52DB307CC52D00FB94EF /* NavActionSegments.swift */,
+			);
+			path = Home;
 			sourceTree = "<group>";
 		};
 		1AF669B62A30C3FF0059022D /* JPBlurView */ = {
