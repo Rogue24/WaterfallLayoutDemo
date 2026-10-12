@@ -171,14 +171,45 @@ extension Env {
         if #available(iOS 27.1, *), isDuo {
             window.addInteraction(interaction)
         }
+        
+//        print("jp_log Env.sceneSize: \(self.sceneSize)")
+//        print("jp_log Env.safeAreaInsets: \(self.safeAreaInsets)")
+//        print("jp_log Env.displayMode: \(self.displayMode)")
+//        print("jp_log Env.hingeStatus: \(self.hingeStatus.jp_log)")
+//        print("jp_log Env.hingeAngle: \(self.hingeAngle)")
+//        print("jp_log ------------------------------- \(lookTime())")
     }
 }
 
-// MARK: - 场景变化（内外屏切换、内屏旋转、内屏分屏）
+// MARK: - 场景变化（内外屏切换、内屏旋转、内屏全屏分屏切换）
+@available(iOS 26.0, *)
 extension Env {
     static func resetIfNeeded(_ windowScene: UIWindowScene) {
         guard !_isConfigured || isDuo else { return }
+        
+        log_1(windowScene)
+        
+        // 拖拽中尺寸会不断变化，故暂不刷新
+        if windowScene.effectiveGeometry.isInteractivelyResizing {
+            log_2(windowScene)
+            log_3()
+            return
+        }
+        
+        // 此时的window还没真正的变化，需要下一轮Runloop才会同步最新的尺寸
+        DispatchQueue.main.async {
+            log_2(windowScene)
+            _resetIfNeeded(windowScene)
+            log_3()
+        }
+    }
+    
+    static private func _resetIfNeeded(_ windowScene: UIWindowScene) {
         guard let window = windowScene.windows.first else { return }
+//        print("jp_log 000 window.safeAreaInsets: \(window.safeAreaInsets)")
+        window.layoutIfNeeded() // 📌 核心代码：调用这句才能立马同步最新的安全区域
+//        print("jp_log 111 window.safeAreaInsets: \(window.safeAreaInsets)")
+//        print("jp_log -------------------")
         
         let trait = windowScene.traitCollection
         let isHorRegular = trait.horizontalSizeClass == .regular
@@ -187,12 +218,7 @@ extension Env {
         let screenSpace = windowScene.screen.coordinateSpace
         let screenBounds = screenSpace.bounds
         
-        let sceneSpace: UICoordinateSpace
-        if #available(iOS 26.0, *) {
-            sceneSpace = windowScene.effectiveGeometry.coordinateSpace
-        } else {
-            sceneSpace = window.coordinateSpace
-        }
+        let sceneSpace = windowScene.effectiveGeometry.coordinateSpace
         let sceneBounds = sceneSpace.bounds
         
         let safeAreaInsets = window.safeAreaInsets
@@ -214,12 +240,7 @@ extension Env {
                 let currentIsLandscape = sceneBounds.width > sceneBounds.height
                 displayMode = currentIsLandscape ? .innerLandscapeFull : .innerPortraitFull
             } else { // 外屏
-                let orientation: UIInterfaceOrientation
-                if #available(iOS 26.0, *) {
-                    orientation = windowScene.effectiveGeometry.interfaceOrientation
-                } else {
-                    orientation = windowScene.interfaceOrientation
-                }
+                let orientation = windowScene.effectiveGeometry.interfaceOrientation
                 switch orientation {
                 case .landscapeLeft:
                     displayMode = .outerLandscapeLeft
@@ -288,7 +309,10 @@ extension Env {
 //        print("jp_log Env.safeAreaWithTabBarInsets: \(safeAreaWithTabBarInsets)")
 //        print("jp_log Env.transitionDuration: \(transitionDuration)")
     }
-    
+}
+
+// MARK: - 场景变化（内屏左右分屏切换）
+extension Env {
     static func switchSplitIfNeeded(_ window: UIWindow) {
         guard _isConfigured, isDuo else { return }
         guard displayMode.isSplit, window.safeAreaInsets.top == 0 else { return }
@@ -394,6 +418,49 @@ extension Env {
          else { return }
      }
      */
+    
+    static var isHingeActive: Bool {
+        hingeStatus == .partiallyOpen
+    }
+    
+    static var hingeFrame: CGRect {
+        switch displayMode {
+        case .innerLandscapeFull:
+            let hingeW: CGFloat = 40.0
+            return CGRect(
+                x: (sceneWidth - hingeW) * 0.5,
+                y: 0.0,
+                width: hingeW,
+                height: sceneHeight
+            )
+        case .innerPortraitFull:
+            let hingeH: CGFloat = 40.0
+            return CGRect(
+                x: 0.0,
+                y: (sceneHeight - hingeH) * 0.5,
+                width: sceneWidth,
+                height: hingeH
+            )
+        case .innerSplitLeft:
+            let hingeW: CGFloat = 13.5 // 13.5 + 13 + 13.5 = 40，所以中间那条缝宽13
+            return CGRect(
+                x: sceneWidth - hingeW,
+                y: 0.0,
+                width: hingeW,
+                height: sceneHeight
+            )
+        case .innerSplitRight:
+            let hingeW: CGFloat = 13.5
+            return CGRect(
+                x: 0.0,
+                y: 0.0,
+                width: hingeW,
+                height: sceneHeight
+            )
+        default:
+            return .zero
+        }
+    }
 }
 
 // MARK: - 状态栏/导航栏/TabBar
@@ -452,5 +519,95 @@ extension Env {
         default:
             return 24
         }
+    }
+}
+
+// MARK: - Debug
+@available(iOS 26.0, *)
+private extension Env {
+    static func log_1(_ windowScene: UIWindowScene) {
+#if DEBUG
+//        let geometry = windowScene.effectiveGeometry
+////        let trait = windowScene.traitCollection
+//
+//        let isResizing = geometry.isInteractivelyResizing // 是否正在拖拽窗口
+//        print("jp_log isResizing: \(isResizing) --- \(lookTime())")
+//
+//        let orientation = geometry.interfaceOrientation
+//        print("jp_log orientation: \(orientation.jp_log)")
+//
+////        let isOrientationLocked = geometry.isInterfaceOrientationLocked
+////        print("jp_log isOrientationLocked: \(isOrientationLocked)")
+////
+////        let displayScale = trait.displayScale
+////        print("jp_log displayScale: \(displayScale)")
+////
+////        let horSizeClass = trait.horizontalSizeClass
+////        print("jp_log horizontalSizeClass: \(horSizeClass.jp_log)")
+////
+////        let verSizeClass = trait.verticalSizeClass
+////        print("jp_log verticalSizeClass: \(verSizeClass.jp_log)")
+////
+////        if #available(iOS 27.1, *) {
+////            let verBarEdge = trait.verticalBarEdge
+////            print("jp_log verticalBarEdge: \(verBarEdge.jp_log)")
+////        }
+//
+//        let sceneBounds = geometry.coordinateSpace.bounds
+//        print("jp_log scene.bounds: \(sceneBounds)")
+//
+//        let screenBounds = windowScene.screen.coordinateSpace.bounds
+//        print("jp_log screen.bounds: \(screenBounds)")
+//
+////        let rectOnScreen = geometry.coordinateSpace.convert(sceneBounds, to: windowScene.screen.coordinateSpace)
+////        print("jp_log rectOnScreen: \(rectOnScreen)")
+#endif
+    }
+    
+    static func log_2(_ windowScene: UIWindowScene) {
+#if DEBUG
+////        let mainBounds = UIScreen.main.bounds
+////        print("jp_log UIScreen.main.bounds: \(mainBounds)")
+////
+////        let statusBarFrame = windowScene.statusBarManager?.statusBarFrame ?? .zero
+////        print("jp_log statusBarFrame: \(statusBarFrame)")
+//
+//        if #available(iOS 27.1, *) {
+//            let verBarEdge = windowScene.traitCollection.verticalBarEdge
+//            print("jp_log verticalBarEdge: \(verBarEdge.jp_log)")
+//        }
+//
+//        if let window = windowScene.windows.first {
+////            print("jp_log windows.first == self.window: \(window == self.window)") // true
+////            print("jp_log windows.first == windowScene.keyWindow: \(window == windowScene.keyWindow)") // true
+////            print("jp_log windows.first.windowScene == windowScene: \(window.windowScene == windowScene)") // true
+//            print("jp_log window.bounds: \(window.bounds)")
+//            print("jp_log window.safeAreaInsets: \(window.safeAreaInsets)")
+//            if #available(iOS 27.1, *) {
+//                if let hinge = window.reservedRegions(kind: .division, options: .includeInactive).first {
+//                    print("jp_log 铰链 hinge: \(hinge.isActive), \(hinge.frame)")
+//                    if hinge.frame.minX > window.bounds.midX {
+//                        print("jp_log 铰链在App的右边，所以App在左半屏")
+//                    } else if hinge.frame.maxX < window.bounds.midX {
+//                        print("jp_log 铰链在App的左边，所以App在右半屏")
+//                    } else {
+//                        print("jp_log 铰链在App的中间，所以App满屏展示ing")
+//                    }
+//                } else {
+//                    print("jp_log 找不着铰链")
+//                }
+//            }
+//        }
+#endif
+    }
+    
+    static func log_3() {
+#if DEBUG
+//        print("jp_log Env.displayMode: \(self.displayMode.jp_log)")
+//        print("jp_log Env.hingeStatus: \(self.hingeStatus.jp_log)")
+//        print("jp_log Env.hingeAngle: \(self.hingeAngle)")
+//        print("jp_log Env.hingeFrame: \(self.hingeFrame)")
+//        print("jp_log ------------------------------- \(lookTime())")
+#endif
     }
 }
