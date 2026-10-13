@@ -91,6 +91,7 @@ enum Env {
 extension Env {
     static func setup(_ window: UIWindow) {
         guard let windowScene = window.windowScene else { return }
+        window.layoutIfNeeded()
         
         let trait = windowScene.traitCollection
         displayScale = trait.displayScale
@@ -160,7 +161,7 @@ extension Env {
         if isDuo {
             // 临时处理：使用外屏的尺寸和安全区域
             basisSceneBounds = CGRect(x: 0.0, y: 0.0, width: 466.0, height: 678.0)
-            basisSafeAreaInsets = UIEdgeInsets(top: 24.0, left: 0.0, bottom: 34.0, right: 84.0)
+            basisSafeAreaInsets = UIEdgeInsets(top: 0.0, left: 0.0, bottom: 34.0, right: 84.0)
         } else {
             basisSceneBounds = sceneBounds
             basisSafeAreaInsets = safeAreaInsets
@@ -174,10 +175,10 @@ extension Env {
         
 //        print("jp_log Env.sceneSize: \(self.sceneSize)")
 //        print("jp_log Env.safeAreaInsets: \(self.safeAreaInsets)")
-//        print("jp_log Env.displayMode: \(self.displayMode)")
+//        print("jp_log Env.displayMode: \(self.displayMode.jp_log)")
 //        print("jp_log Env.hingeStatus: \(self.hingeStatus.jp_log)")
 //        print("jp_log Env.hingeAngle: \(self.hingeAngle)")
-//        print("jp_log ------------------------------- \(lookTime())")
+//        print("jp_log setup ------------------------------- \(lookTime())")
     }
 }
 
@@ -185,14 +186,12 @@ extension Env {
 @available(iOS 26.0, *)
 extension Env {
     static func resetIfNeeded(_ windowScene: UIWindowScene) {
-        guard !_isConfigured || isDuo else { return }
-        
         log_1(windowScene)
         
         // 拖拽中尺寸会不断变化，故暂不刷新
         if windowScene.effectiveGeometry.isInteractivelyResizing {
             log_2(windowScene)
-            log_3()
+            log_3(windowScene)
             return
         }
         
@@ -200,16 +199,15 @@ extension Env {
         DispatchQueue.main.async {
             log_2(windowScene)
             _resetIfNeeded(windowScene)
-            log_3()
+            log_3(windowScene)
         }
     }
     
     static private func _resetIfNeeded(_ windowScene: UIWindowScene) {
         guard let window = windowScene.windows.first else { return }
-//        print("jp_log 000 window.safeAreaInsets: \(window.safeAreaInsets)")
+//        print("jp_log window.layoutIfNeeded before \(window.safeAreaInsets)")
         window.layoutIfNeeded() // 📌 核心代码：调用这句才能立马同步最新的安全区域
-//        print("jp_log 111 window.safeAreaInsets: \(window.safeAreaInsets)")
-//        print("jp_log -------------------")
+//        print("jp_log window.layoutIfNeeded after \(window.safeAreaInsets)")
         
         let trait = windowScene.traitCollection
         let isHorRegular = trait.horizontalSizeClass == .regular
@@ -292,13 +290,14 @@ extension Env {
         }
         
         // ---------- 配置完成 ----------
-        if !_isConfigured {
-            _isConfigured = true
-            return // 首次配置不广播（防重）
-        }
+        _isConfigured = true
         
         // ---------- 若变化则广播 ----------
-        guard !options.isEmpty else { return }
+        if options.isEmpty {
+//            print("jp_log Env no Change")
+            return
+        }
+        
         // 内外屏切换没有动画，屏幕旋转才有动画
         let transitionDuration: TimeInterval = (isRotated && UIApplication.jp_appState == .active) ? 0.3 : 0
         NotificationCenter.jp.post(key: .EnvSceneDidChange, userInfo: [
@@ -371,15 +370,13 @@ extension Env {
         if let hinge = update.hinge {
             hingeRadian = hinge.angle
             switch hinge.status {
-            case .unknown:
-                hingeStatus = .unknown
             case .closed:
                 hingeStatus = .closed
             case .partiallyOpen:
                 hingeStatus = .partiallyOpen
             case .fullyOpen:
                 hingeStatus = .fullyOpen
-            @unknown default:
+            default:
                 hingeStatus = .unknown
             }
         } else {
@@ -583,31 +580,31 @@ private extension Env {
 ////            print("jp_log windows.first.windowScene == windowScene: \(window.windowScene == windowScene)") // true
 //            print("jp_log window.bounds: \(window.bounds)")
 //            print("jp_log window.safeAreaInsets: \(window.safeAreaInsets)")
-//            if #available(iOS 27.1, *) {
-//                if let hinge = window.reservedRegions(kind: .division, options: .includeInactive).first {
-//                    print("jp_log 铰链 hinge: \(hinge.isActive), \(hinge.frame)")
-//                    if hinge.frame.minX > window.bounds.midX {
-//                        print("jp_log 铰链在App的右边，所以App在左半屏")
-//                    } else if hinge.frame.maxX < window.bounds.midX {
-//                        print("jp_log 铰链在App的左边，所以App在右半屏")
-//                    } else {
-//                        print("jp_log 铰链在App的中间，所以App满屏展示ing")
-//                    }
-//                } else {
-//                    print("jp_log 找不着铰链")
-//                }
-//            }
 //        }
 #endif
     }
     
-    static func log_3() {
+    static func log_3(_ windowScene: UIWindowScene) {
 #if DEBUG
 //        print("jp_log Env.displayMode: \(self.displayMode.jp_log)")
 //        print("jp_log Env.hingeStatus: \(self.hingeStatus.jp_log)")
 //        print("jp_log Env.hingeAngle: \(self.hingeAngle)")
 //        print("jp_log Env.hingeFrame: \(self.hingeFrame)")
-//        print("jp_log ------------------------------- \(lookTime())")
+//        if #available(iOS 27.1, *), let window = windowScene.windows.first {
+//            if let hinge = window.reservedRegions(kind: .division, options: .includeInactive).first {
+//                print("jp_log 铰链 hinge: \(hinge.isActive), \(hinge.frame)")
+//                if hinge.frame.minX > window.bounds.midX {
+//                    print("jp_log 铰链在App的右边，所以App在左半屏")
+//                } else if hinge.frame.maxX < window.bounds.midX {
+//                    print("jp_log 铰链在App的左边，所以App在右半屏")
+//                } else {
+//                    print("jp_log 铰链在App的中间，所以App满屏展示ing")
+//                }
+//            } else {
+//                print("jp_log 找不着铰链")
+//            }
+//        }
+//        print("jp_log reset ------------------------------- \(lookTime())")
 #endif
     }
 }

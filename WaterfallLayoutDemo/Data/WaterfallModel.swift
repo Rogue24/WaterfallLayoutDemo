@@ -10,6 +10,7 @@ import UIKit
 class WaterfallModel {
     let image: UIImage
     let imageIndex: Int
+    var isBrowsing = false
     
     init(image: UIImage, imageIndex: Int) {
         self.image = image

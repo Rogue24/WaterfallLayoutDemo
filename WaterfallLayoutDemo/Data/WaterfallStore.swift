@@ -25,7 +25,7 @@ enum WaterfallStore {
         
         let group = DispatchGroup()
         let locker = DispatchSemaphore(value: 1)
-        let maxViewWidth = min(UIScreen.main.bounds.width, UIScreen.main.bounds.height)
+        let maxViewWidth = min(Env.basisSceneBounds.width, Env.basisSceneBounds.height)
         
         for i in 1...16 {
             DispatchQueue.global().async(group: group) {

@@ -9,6 +9,8 @@ import UIKit
 import SnapKit
 
 class HomeViewController: UIViewController {
+    private var models: [WaterfallModel] = []
+    
     private lazy var collectionView: UICollectionView = {
         let waterfallLayout = WaterfallLayout()
         waterfallLayout.delegate = self
@@ -26,7 +28,7 @@ class HomeViewController: UIViewController {
         }
         
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: waterfallLayout)
-        collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.contentInsetAdjustmentBehavior = .scrollableAxes
         collectionView.backgroundColor = .clear
         collectionView.showsVerticalScrollIndicator = true
         collectionView.showsHorizontalScrollIndicator = false
@@ -37,15 +39,13 @@ class HomeViewController: UIViewController {
         return collectionView
     }()
     
-    private let segments = NavActionSegments()
+    private let segmentedControl = UISegmentedControl(items: ["增", "删", "改"])
+//    private let segments = NavActionSegments()
     
-    private var colCount = 4
+    private var isAppear: Bool = false
     
-    private var models: [WaterfallModel] = []
-    
-    private var sceneSize: CGSize = Env.sceneSize
-    private var safeAreaInsets: UIEdgeInsets = Env.safeAreaInsets
-    
+    private var displayMode = Env.displayMode
+    private var hingeStatus = Env.hingeStatus
     private var isObservingSceneChanges: Bool = false {
         didSet {
             guard isObservingSceneChanges != oldValue else { return }
@@ -57,31 +57,15 @@ class HomeViewController: UIViewController {
         }
     }
     
-    private var contentInsets: UIEdgeInsets {
-        var safeAreaInsets = self.safeAreaInsets
-        safeAreaInsets.top = view.layoutMargins.top
-        safeAreaInsets.bottom = view.layoutMargins.bottom
-        if Env.displayMode == .innerLandscapeFull, Env.isHingeActive {
-            // 横屏对折时，左右间距保持一致，让列表能居中对折
-            safeAreaInsets.left = safeAreaInsets.right
-        }
-        safeAreaInsets.top += 5
-        safeAreaInsets.left += 5
-        safeAreaInsets.bottom += 5
-        safeAreaInsets.right += 5
-        return safeAreaInsets
-    }
-    
-    private var isAppear: Bool = false
+    private var colCount = 4
+    private var contentInsets: UIEdgeInsets = .zero
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "WaterfallLayout_Demo"
-        view.backgroundColor = .systemBackground
-        
+        resetLayoutAttributes()
+        setupBase()
+        setupItems()
         setupCollectionView()
-        setupToolbar()
-        
         WaterfallStore.loadDone = { [weak self] in
             guard let self = self else { return }
             self.models = WaterfallStore.models.shuffled()
@@ -95,16 +79,9 @@ class HomeViewController: UIViewController {
         WaterfallStore.loadDone = nil
     }
     
-    private func animateUpdate(_ updateHandle: @escaping (_ collectionView: UICollectionView) -> ()) {
-        UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.88, initialSpringVelocity: 1) {
-            self.collectionView.performBatchUpdates {
-                updateHandle(self.collectionView)
-            }
-        }
-    }
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        navigationController?.setNavigationBarHidden(false, animated: animated)
         navigationController?.setToolbarHidden(false, animated: animated)
         updateLayoutIfNeeded()
         isObservingSceneChanges = true
@@ -141,50 +118,77 @@ class HomeViewController: UIViewController {
         super.viewWillTransition(to: size, with: coordinator)
 //        print("jp_log *** HomeVC transitionDuration ------- \(coordinator.transitionDuration)")
     }
-}
-
-private extension HomeViewController {
-    func setupCollectionView() {
-        view.addSubview(collectionView)
-        collectionView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+    
+    private func animateUpdate(_ updateHandle: @escaping (_ collectionView: UICollectionView) -> ()) {
+        UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.88, initialSpringVelocity: 1) {
+            self.collectionView.performBatchUpdates {
+                updateHandle(self.collectionView)
+            }
         }
     }
+}
+
+// MARK: - Setup
+private extension HomeViewController {
+    func setupBase() {
+        view.backgroundColor = .systemBackground
+        navigationItem.title = "WaterfallLayout_Demo"
+        navigationItem.largeTitleDisplayMode = .automatic
+    }
     
-    func setupToolbar() {
-        let colItem = UIBarButtonItem(
-            image: UIImage(systemName: "list.number"),
-            style: .plain,
-            target: self,
-            action: #selector(chooseColCount)
-        )
+    func setupItems() {
+        segmentedControl.selectedSegmentIndex = 0
+        let segItem = UIBarButtonItem(customView: segmentedControl)
+//        let segItem = UIBarButtonItem(customView: segments)
+        navigationItem.rightBarButtonItem = segItem
         
-        let reloadItem = UIBarButtonItem(
-            barButtonSystemItem: .refresh,
-            target: self,
-            action: #selector(reloadAll)
-        )
-        
-        let addItem = UIBarButtonItem(
-            barButtonSystemItem: .add,
-            target: self,
-            action: #selector(addArray)
-        )
+        var items: [UIBarButtonItem] = []
         
         let flexibleSpace = UIBarButtonItem(
             barButtonSystemItem: .flexibleSpace,
             target: nil,
             action: nil
         )
+        items.append(flexibleSpace)
         
-        let segItem = UIBarButtonItem(customView: segments)
+        if !Env.isDuo {
+            let colItem = UIBarButtonItem(
+                image: UIImage(systemName: "list.number"),
+                style: .plain,
+                target: self,
+                action: #selector(chooseCol)
+            )
+            items.append(colItem)
+        }
         
-        toolbarItems = [colItem, reloadItem, addItem, flexibleSpace, segItem]
+        let reloadItem = UIBarButtonItem(
+            barButtonSystemItem: .refresh,
+            target: self,
+            action: #selector(reloadAll)
+        )
+        items.append(reloadItem)
+        
+        let addItem = UIBarButtonItem(
+            barButtonSystemItem: .add,
+            target: self,
+            action: #selector(addArray)
+        )
+        items.append(addItem)
+        
+        toolbarItems = items
+    }
+    
+    func setupCollectionView() {
+        view.addSubview(collectionView)
+        collectionView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
     }
 }
 
+// MARK: - Actions
 private extension HomeViewController {
-    @objc func chooseColCount() {
+    @objc func chooseCol() {
         guard WaterfallStore.isLoaded else { return }
         let alertCtr = UIAlertController(title: "选择列数", message: nil, preferredStyle: .actionSheet)
         for i in 1...5 {
@@ -218,25 +222,45 @@ private extension HomeViewController {
             collectionView.insertItems(at: indexPaths)
         }
     }
+    
+    func browse(_ cell: WaterfallCell) {
+        BrowseImageView.show(from: cell) { [weak self] model in
+            guard let self else { return nil }
+            for kCell in self.collectionView.visibleCells {
+                guard let c = kCell as? WaterfallCell, c.model === model else { continue }
+                return c
+            }
+            return nil
+        }
+    }
 }
 
+// MARK: - <UICollectionViewDataSource, UICollectionViewDelegate>
 extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         models.count
     }
     
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard let c = cell as? WaterfallCell else { return }
+        c.isHidden = models[indexPath.item].isBrowsing
+    }
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! WaterfallCell
         cell.model = models[indexPath.item]
+        // 长按预览
+        cell.goBrowse = { [weak self] in
+            self?.browse($0)
+        }
         return cell
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         guard WaterfallStore.isLoaded else { return }
-        
         collectionView.setContentOffset(collectionView.contentOffset, animated: true)
         
-        switch segments.selectedIndex {
+        switch segmentedControl.selectedSegmentIndex {
         // 增
         case 0:
             models.insert(WaterfallStore.models.randomElement()!, at: indexPath.item)
@@ -255,6 +279,7 @@ extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelega
     }
 }
 
+// MARK: - <WaterfallLayoutDelegate>
 extension HomeViewController: WaterfallLayoutDelegate {
     func waterfallLayout(_ waterfallLayout: WaterfallLayout, heightForItemAtIndex index: Int, itemWidth: CGFloat) -> CGFloat {
         let model = models[index]
@@ -303,42 +328,53 @@ private extension HomeViewController {
     
     /// 场景发生变化的通知（内外屏切换、内屏旋转、内屏全屏分屏切换、内屏左右分屏切换）
     @objc func didReceiveEnvSceneDidChange(notification: Notification) {
-        guard let rawValue = notification.userInfo?["options"] as? UInt else { return }
-        let options = EnvUpdateOptions(rawValue: rawValue)
+        displayMode = Env.displayMode
+        hingeStatus = Env.hingeStatus
         let duration = notification.userInfo?["transitionDuration"] as? TimeInterval ?? 0
-        updateLayout(options: options, duration: duration)
+        updateLayout(duration: duration)
     }
     
     /// 铰链状态发生变化的通知
     @objc func didReceiveEnvHingeStatusDidChange(notification: Notification) {
-//        guard let userInfo = notification.userInfo,
-//              let oldRawValue = userInfo["oldStatus"] as? Int,
-//              let nowRawValue = userInfo["nowStatus"] as? Int,
-//              let oldStatus = EnvHingeStatus(rawValue: oldRawValue),
-//              let nowStatus = EnvHingeStatus(rawValue: nowRawValue)
-//        else { return }
-        guard Env.displayMode == .innerLandscapeFull else { return }
-        updateLayout(options: .safeArea, duration: 0.3)
+        guard let userInfo = notification.userInfo,
+              let nowRawValue = userInfo["nowStatus"] as? Int,
+              let nowStatus = EnvHingeStatus(rawValue: nowRawValue),
+              let oldRawValue = userInfo["oldStatus"] as? Int,
+              let oldStatus = EnvHingeStatus(rawValue: oldRawValue)
+        else { return }
+        updateLayoutIfNeeded(from: oldStatus, to: nowStatus, duration: 0.3)
     }
 }
 
 // MARK: - Duo适配_更新界面布局（如果有变化）
 private extension HomeViewController {
-    private func updateLayoutIfNeeded() {
-        var options: EnvUpdateOptions = []
-        if sceneSize != Env.sceneSize {
-            options.insert(.bounds)
+    func updateLayoutIfNeeded() {
+        guard displayMode != Env.displayMode else {
+            updateLayoutIfNeeded(from: hingeStatus, to: Env.hingeStatus, duration: 0)
+            return
         }
-        if safeAreaInsets != Env.safeAreaInsets {
-            options.insert(.safeArea)
-        }
-        updateLayout(options: options, duration: 0)
+        
+        displayMode = Env.displayMode
+        hingeStatus = Env.hingeStatus
+        updateLayout(duration: 0)
     }
     
-    func updateLayout(options: EnvUpdateOptions, duration: TimeInterval) {
-        guard !options.isEmpty else { return }
-        sceneSize = Env.sceneSize
-        safeAreaInsets = Env.safeAreaInsets
+    func updateLayoutIfNeeded(from oldStatus: EnvHingeStatus, to nowStatus: EnvHingeStatus, duration: TimeInterval) {
+        guard hingeStatus != nowStatus else { return }
+        hingeStatus = nowStatus
+        
+        guard displayMode == .innerLandscapeFull else { return }
+        
+        // 只对开放状态之间的切换（对折开<->全展开）做布局刷新
+        guard (nowStatus == .partiallyOpen && (oldStatus == .fullyOpen || oldStatus == .unknown))
+           || (oldStatus == .partiallyOpen && nowStatus == .fullyOpen)
+        else { return }
+        
+        updateLayout(duration: duration)
+    }
+    
+    func updateLayout(duration: TimeInterval) {
+        resetLayoutAttributes()
         
         guard duration > 0 else {
             collectionView.collectionViewLayout.invalidateLayout()
@@ -353,3 +389,22 @@ private extension HomeViewController {
     }
 }
 
+// MARK: - 设置布局属性
+private extension HomeViewController {
+    func resetLayoutAttributes() {
+        if Env.isDuo {
+            colCount = Env.isHorRegular ? 4 : 3
+        }
+        
+        contentInsets = UIEdgeInsets(top: 5, left: 20, bottom: 5, right: 20)
+        if Env.safeAreaInsets.right > 0 {
+            contentInsets.right = Env.safeAreaInsets.right
+        }
+        if Env.displayMode == .innerLandscapeFull, Env.isHingeActive {
+            // 横屏对折时，左右间距保持一致，让列表能居中对折
+            contentInsets.left = contentInsets.right
+        } else if Env.safeAreaInsets.left > 0 {
+            contentInsets.left = Env.safeAreaInsets.left
+        }
+    }
+}

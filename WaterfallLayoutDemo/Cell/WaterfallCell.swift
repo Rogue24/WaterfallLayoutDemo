@@ -6,16 +6,20 @@
 //
 
 import UIKit
+import SnapKit
 
 class WaterfallCell: UICollectionViewCell {
     let imgView = UIImageView()
     
     var model: WaterfallModel? {
         didSet {
-            guard let model = self.model else { return }
+            guard let model else { return }
             imgView.image = model.image
+            isHidden = model.isBrowsing
         }
     }
+    
+    var goBrowse: ((_ cell: WaterfallCell) -> Void)? = nil
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -24,7 +28,9 @@ class WaterfallCell: UICollectionViewCell {
         imgView.layer.masksToBounds = true
         imgView.backgroundColor = .lightGray
         contentView.addSubview(imgView)
-        imgView.snp.makeConstraints { $0.edges.equalToSuperview() }
+        imgView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
         
         let longGR = UILongPressGestureRecognizer(target: self, action: #selector(browse(_:)))
         longGR.minimumPressDuration = 0.25
@@ -37,6 +43,6 @@ class WaterfallCell: UICollectionViewCell {
     
     @objc func browse(_ longGR: UILongPressGestureRecognizer) {
         guard case .began = longGR.state else { return }
-        BrowseImageView.show(from: self)
+        goBrowse?(self)
     }
 }
