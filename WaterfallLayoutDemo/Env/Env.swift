@@ -417,7 +417,7 @@ extension Env {
      */
     
     static var isHingeActive: Bool {
-        hingeStatus == .partiallyOpen
+        hingeStatus.isActive
     }
     
     static var hingeFrame: CGRect {
