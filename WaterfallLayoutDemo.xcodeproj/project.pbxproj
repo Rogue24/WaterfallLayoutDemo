@@ -114,10 +114,6 @@
 		002769453078986E00F30AE2 /* Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				00FA52BF3078C90000FB94EF /* Env.swift */,
-				00FA52E5307F272400FB94EF /* Environmenter.h */,
-				00FA52E6307F272400FB94EF /* Environmenter.m */,
-				00FA52E3307F267900FB94EF /* Environmenter+.swift */,
 				00FA52CD3078D6F800FB94EF /* Const */,
 				00FA52CC3078D68B00FB94EF /* Extensions */,
 				1AF669B62A30C3FF0059022D /* JPBlurView */,
@@ -156,6 +152,7 @@
 				004A336029B4ACA3001832E5 /* Data */,
 				004A336129B4ACAA001832E5 /* Cell */,
 				1AF669BE2A30C4580059022D /* Browse */,
+				00FA52E8307F298200FB94EF /* Env */,
 				002769453078986E00F30AE2 /* Utilities */,
 				004A333829B49632001832E5 /* Pictures */,
 				004A334F29B4963D001832E5 /* Supporting Files */,
@@ -264,6 +261,17 @@
 				00FA52DB307CC52D00FB94EF /* NavActionSegments.swift */,
 			);
 			path = Home;
+			sourceTree = "<group>";
+		};
+		00FA52E8307F298200FB94EF /* Env */ = {
+			isa = PBXGroup;
+			children = (
+				00FA52BF3078C90000FB94EF /* Env.swift */,
+				00FA52E5307F272400FB94EF /* Environmenter.h */,
+				00FA52E6307F272400FB94EF /* Environmenter.m */,
+				00FA52E3307F267900FB94EF /* Environmenter+.swift */,
+			);
+			path = Env;
 			sourceTree = "<group>";
 		};
 		1AF669B62A30C3FF0059022D /* JPBlurView */ = {
