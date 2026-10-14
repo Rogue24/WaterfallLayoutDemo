@@ -363,6 +363,7 @@ private extension HomeViewController {
         guard hingeStatus != nowStatus else { return }
         hingeStatus = nowStatus
         
+        // 铰链变化，这里只对内屏横屏做处理
         guard displayMode == .innerLandscapeFull else { return }
         
         // 只对开放状态之间的切换（对折开<->全展开）做布局刷新

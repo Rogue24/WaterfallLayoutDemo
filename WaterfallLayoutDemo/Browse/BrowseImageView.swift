@@ -280,6 +280,11 @@ private extension BrowseImageView {
         guard hingeStatus != nowStatus else { return }
         hingeStatus = nowStatus
         
+        // 铰链变化，外屏和内屏分屏时不做处理
+        if displayMode.isOuter || displayMode.isSplit {
+            return
+        }
+        
         // 只对开放状态之间的切换（对折开<->全展开）做布局刷新
         guard (nowStatus == .partiallyOpen && (oldStatus == .fullyOpen || oldStatus == .unknown))
            || (oldStatus == .partiallyOpen && nowStatus == .fullyOpen)
