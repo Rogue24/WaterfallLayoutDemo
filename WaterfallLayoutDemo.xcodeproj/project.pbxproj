@@ -36,6 +36,8 @@
 		00FA52D03078D8D100FB94EF /* Const.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52CF3078D8D100FB94EF /* Const.swift */; };
 		00FA52D63079F08200FB94EF /* MainWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52D53079F08200FB94EF /* MainWindow.swift */; };
 		00FA52DC307CC52D00FB94EF /* NavActionSegments.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52DB307CC52D00FB94EF /* NavActionSegments.swift */; };
+		00FA52E4307F267900FB94EF /* Environmenter+.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52E3307F267900FB94EF /* Environmenter+.swift */; };
+		00FA52E7307F272400FB94EF /* Environmenter.m in Sources */ = {isa = PBXBuildFile; fileRef = 00FA52E6307F272400FB94EF /* Environmenter.m */; };
 		1AF669AD2A30C3CA0059022D /* BrowseImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669AC2A30C3CA0059022D /* BrowseImageView.swift */; };
 		1AF669AF2A30C3D70059022D /* WaterfallCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669AE2A30C3D70059022D /* WaterfallCell.swift */; };
 		1AF669B12A30C3E00059022D /* WaterfallModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF669B02A30C3E00059022D /* WaterfallModel.swift */; };
@@ -75,13 +77,15 @@
 		004A335E29B496F2001832E5 /* girl_10.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = girl_10.jpg; sourceTree = "<group>"; };
 		004A336729B4B909001832E5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		00FA52BF3078C90000FB94EF /* Env.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Env.swift; sourceTree = "<group>"; };
-		00FA52C33078CA3E00FB94EF /* Constant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Constant.h; sourceTree = "<group>"; };
 		00FA52C43078D5E200FB94EF /* NotificationCenter+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NotificationCenter+Extension.swift"; sourceTree = "<group>"; };
 		00FA52C53078D5E200FB94EF /* NotificationCenter+Key.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NotificationCenter+Key.swift"; sourceTree = "<group>"; };
 		00FA52CA3078D62500FB94EF /* JP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JP.swift; sourceTree = "<group>"; };
 		00FA52CF3078D8D100FB94EF /* Const.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Const.swift; sourceTree = "<group>"; };
 		00FA52D53079F08200FB94EF /* MainWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindow.swift; sourceTree = "<group>"; };
 		00FA52DB307CC52D00FB94EF /* NavActionSegments.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavActionSegments.swift; sourceTree = "<group>"; };
+		00FA52E3307F267900FB94EF /* Environmenter+.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Environmenter+.swift"; sourceTree = "<group>"; };
+		00FA52E5307F272400FB94EF /* Environmenter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Environmenter.h; sourceTree = "<group>"; };
+		00FA52E6307F272400FB94EF /* Environmenter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Environmenter.m; sourceTree = "<group>"; };
 		1AF669AC2A30C3CA0059022D /* BrowseImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BrowseImageView.swift; sourceTree = "<group>"; };
 		1AF669AE2A30C3D70059022D /* WaterfallCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WaterfallCell.swift; sourceTree = "<group>"; };
 		1AF669B02A30C3E00059022D /* WaterfallModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WaterfallModel.swift; sourceTree = "<group>"; };
@@ -111,6 +115,9 @@
 			isa = PBXGroup;
 			children = (
 				00FA52BF3078C90000FB94EF /* Env.swift */,
+				00FA52E5307F272400FB94EF /* Environmenter.h */,
+				00FA52E6307F272400FB94EF /* Environmenter.m */,
+				00FA52E3307F267900FB94EF /* Environmenter+.swift */,
 				00FA52CD3078D6F800FB94EF /* Const */,
 				00FA52CC3078D68B00FB94EF /* Extensions */,
 				1AF669B62A30C3FF0059022D /* JPBlurView */,
@@ -246,7 +253,6 @@
 			children = (
 				00FA52CA3078D62500FB94EF /* JP.swift */,
 				00FA52CF3078D8D100FB94EF /* Const.swift */,
-				00FA52C33078CA3E00FB94EF /* Constant.h */,
 			);
 			path = Const;
 			sourceTree = "<group>";
@@ -442,7 +448,9 @@
 				00FA52DC307CC52D00FB94EF /* NavActionSegments.swift in Sources */,
 				00FA52D63079F08200FB94EF /* MainWindow.swift in Sources */,
 				004A325B29B477E8001832E5 /* AppDelegate.swift in Sources */,
+				00FA52E4307F267900FB94EF /* Environmenter+.swift in Sources */,
 				00FA52C73078D5E200FB94EF /* NotificationCenter+Extension.swift in Sources */,
+				00FA52E7307F272400FB94EF /* Environmenter.m in Sources */,
 				00FA52C83078D5E200FB94EF /* NotificationCenter+Key.swift in Sources */,
 				004A325D29B477E8001832E5 /* SceneDelegate.swift in Sources */,
 				00FA52CB3078D62500FB94EF /* JP.swift in Sources */,

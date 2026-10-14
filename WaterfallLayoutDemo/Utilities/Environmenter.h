@@ -1,11 +1,13 @@
 //
-//  Constant.h
+//  Environmenter.h
 //  WaterfallLayoutDemo
 //
-//  Created by aa on 2026/10/9.
+//  Created by aa on 2026/10/14.
 //
 
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
+
+NS_ASSUME_NONNULL_BEGIN
 
 /// Env变量更新选项
 typedef NS_OPTIONS(NSUInteger, EnvUpdateOptions) {
@@ -41,3 +43,9 @@ typedef NS_ENUM(NSInteger, EnvHingeStatus) {
     /// The hinge is open as far as the device allows
     EnvHingeStatus_FullyOpen = 3,
 };
+
+@interface Environmenter : NSObject
+
+@end
+
+NS_ASSUME_NONNULL_END
