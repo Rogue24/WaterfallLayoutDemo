@@ -42,6 +42,8 @@ class HomeViewController: UIViewController {
     private let segmentedControl = UISegmentedControl(items: ["增", "删", "改"])
 //    private let segments = NavActionSegments()
     
+    private weak var browseImgView: BrowseImageView? = nil
+    
     private var isAppear: Bool = false
     
     private var displayMode = Env.displayMode
@@ -224,7 +226,7 @@ private extension HomeViewController {
     }
     
     func browse(_ cell: WaterfallCell) {
-        BrowseImageView.show(from: cell) { [weak self] model in
+        browseImgView = BrowseImageView.show(from: cell) { [weak self] model in
             guard let self else { return nil }
             for kCell in self.collectionView.visibleCells {
                 guard let c = kCell as? WaterfallCell, c.model === model else { continue }
@@ -239,11 +241,6 @@ private extension HomeViewController {
 extension HomeViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         models.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        guard let c = cell as? WaterfallCell else { return }
-        c.isHidden = models[indexPath.item].isBrowsing
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -380,12 +377,15 @@ private extension HomeViewController {
         guard duration > 0 else {
             collectionView.collectionViewLayout.invalidateLayout()
             collectionView.layoutIfNeeded()
+            resetVisibleCells()
             return
         }
         
         UIView.animate(withDuration: duration, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0) {
             self.collectionView.collectionViewLayout.invalidateLayout()
             self.collectionView.layoutIfNeeded()
+        } completion: { _ in
+            self.resetVisibleCells()
         }
     }
 }
@@ -406,6 +406,14 @@ private extension HomeViewController {
             contentInsets.left = contentInsets.right
         } else if Env.safeAreaInsets.left > 0 {
             contentInsets.left = Env.safeAreaInsets.left
+        }
+    }
+    
+    func resetVisibleCells() {
+        guard browseImgView != nil else { return }
+        collectionView.indexPathsForVisibleItems.forEach {
+            guard let cell = collectionView.cellForItem(at: $0) as? WaterfallCell else { return }
+            cell.isHidden = models[$0.item].isBrowsing
         }
     }
 }

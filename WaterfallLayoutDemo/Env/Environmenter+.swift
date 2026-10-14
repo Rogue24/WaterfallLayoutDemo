@@ -8,6 +8,11 @@
 import UIKit
 
 extension Environmenter {
+    @objc static func setup(_ window: UIWindow) { Env.setup(window) }
+    @available(iOS 26.0, *)
+    @objc static func resetIfNeeded(_ windowScene: UIWindowScene) { Env.resetIfNeeded(windowScene) }
+    @objc static func switchSplitIfNeeded(_ window: UIWindow) { Env.switchSplitIfNeeded(window) }
+    
     @objc static var displayScale: CGFloat { Env.displayScale }
     @objc static var basisSceneBounds: CGRect { Env.basisSceneBounds }
     @objc static var basisSafeAreaInsets: UIEdgeInsets { Env.basisSafeAreaInsets }
@@ -26,6 +31,7 @@ extension Environmenter {
     @objc static var sceneWidth: CGFloat { Env.sceneWidth }
     @objc static var sceneHeight: CGFloat { Env.sceneHeight }
     
+    @objc static var targetSafeAreaInsets: UIEdgeInsets { Env.targetSafeAreaInsets }
     @objc static var safeAreaWithTabBarInsets: UIEdgeInsets { Env.safeAreaWithTabBarInsets }
     @objc static var safeAreaWithTopMarginInsets: UIEdgeInsets { Env.safeAreaWithTopMarginInsets }
     @objc static var safeAreaFullInsets: UIEdgeInsets { Env.safeAreaFullInsets }
@@ -101,7 +107,6 @@ extension EnvHingeStatus {
 
 
 // MARK: - Debug Log
-#if DEBUG
 extension EnvUpdateOptions {
     var jp_log: String {
         var str = ""
@@ -208,5 +213,3 @@ extension UIVerticalBarEdge {
         }
     }
 }
-
-#endif

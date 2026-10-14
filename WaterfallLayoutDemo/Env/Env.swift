@@ -24,12 +24,28 @@ enum Env {
     private(set) static var displayMode: EnvDisplayMode = .outerPortrait
     
     private static var _isConfigured = false
+    private static var _delayReset: DispatchWorkItem? = nil
+    private static var isReseting: Bool { _delayReset != nil }
     
     static var isLandscapeScreen: Bool { screenBounds.width > screenBounds.height }
     static var isLandscapeScene: Bool { sceneBounds.width > sceneBounds.height }
     static var sceneSize: CGSize { sceneBounds.size }
     static var sceneWidth: CGFloat { sceneBounds.width }
     static var sceneHeight: CGFloat { sceneBounds.height }
+    
+    static var targetSafeAreaInsets: UIEdgeInsets {
+        guard isDuo else { return safeAreaInsets }
+        switch displayMode {
+        case .outerLandscapeRight:
+            return UIEdgeInsets(top: 0.0, left: 84.0, bottom: 34.0, right: 0.0)
+        case .innerPortraitFull:
+            return UIEdgeInsets(top: 82.0, left: 0.0, bottom: 34.0, right: 0.0)
+        case .innerSplitLeft:
+            return UIEdgeInsets(top: 0.0, left: 0.0, bottom: 34.0, right: 0.0)
+        default: // .outerPortrait, .outerLandscapeLeft, .innerLandscapeFull, .innerSplitRight:
+            return UIEdgeInsets(top: 0.0, left: 0.0, bottom: 34.0, right: 84.0)
+        }
+    }
     
     static var safeAreaWithTabBarInsets: UIEdgeInsets {
         var safeAreaInsets = self.safeAreaInsets
@@ -186,24 +202,35 @@ extension Env {
 @available(iOS 26.0, *)
 extension Env {
     static func resetIfNeeded(_ windowScene: UIWindowScene) {
+#if DEBUG
         log_1(windowScene)
+#endif
+        _delayReset?.cancel()
+        _delayReset = nil
         
         // 拖拽中尺寸会不断变化，故暂不刷新
         if windowScene.effectiveGeometry.isInteractivelyResizing {
+#if DEBUG
             log_2(windowScene)
             log_3(windowScene)
+#endif
             return
         }
         
         // 此时的window还没真正的变化，需要下一轮Runloop才会同步最新的尺寸
-        DispatchQueue.main.async {
-            log_2(windowScene)
+        let resetItem = DispatchWorkItem {
+            _delayReset = nil
             _resetIfNeeded(windowScene)
-            log_3(windowScene)
         }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: resetItem)
+        _delayReset = resetItem
     }
     
     static private func _resetIfNeeded(_ windowScene: UIWindowScene) {
+#if DEBUG
+        log_2(windowScene)
+        defer { log_3(windowScene) }
+#endif
         guard let window = windowScene.windows.first else { return }
 //        print("jp_log window.layoutIfNeeded before \(window.safeAreaInsets)")
         window.layoutIfNeeded() // 📌 核心代码：调用这句才能立马同步最新的安全区域
@@ -314,6 +341,7 @@ extension Env {
 extension Env {
     static func switchSplitIfNeeded(_ window: UIWindow) {
         guard _isConfigured, isDuo else { return }
+        guard !isReseting else { return }
         guard displayMode.isSplit, window.safeAreaInsets.top == 0 else { return }
         guard sceneBounds == window.bounds, safeAreaInsets != window.safeAreaInsets else { return }
         
@@ -462,19 +490,6 @@ extension Env {
 
 // MARK: - 状态栏/导航栏/TabBar
 extension Env {
-    /// 状态栏高度
-    static var statusBarH: CGFloat {
-        guard _statusBarH == 0 else { return _statusBarH }
-        _statusBarH = UIApplication.jp_window?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
-        return _statusBarH
-    }
-    private static var _statusBarH: CGFloat = 0
-    
-    /// 导航栏基本高度
-    static var navBarH: CGFloat { 44.0 }
-    /// 状态栏+导航栏高度
-    static var statusNavBarH: CGFloat { statusBarH + navBarH }
-    
     /// tabBar基本高度
     static var tabBarBaseH: CGFloat { 49.0 }
     /// tabBar+底部安全间距
@@ -519,11 +534,10 @@ extension Env {
     }
 }
 
-// MARK: - Debug
+// MARK: - Debug Log
 @available(iOS 26.0, *)
 private extension Env {
     static func log_1(_ windowScene: UIWindowScene) {
-#if DEBUG
 //        let geometry = windowScene.effectiveGeometry
 ////        let trait = windowScene.traitCollection
 //
@@ -558,11 +572,9 @@ private extension Env {
 //
 ////        let rectOnScreen = geometry.coordinateSpace.convert(sceneBounds, to: windowScene.screen.coordinateSpace)
 ////        print("jp_log rectOnScreen: \(rectOnScreen)")
-#endif
     }
     
     static func log_2(_ windowScene: UIWindowScene) {
-#if DEBUG
 ////        let mainBounds = UIScreen.main.bounds
 ////        print("jp_log UIScreen.main.bounds: \(mainBounds)")
 ////
@@ -581,11 +593,9 @@ private extension Env {
 //            print("jp_log window.bounds: \(window.bounds)")
 //            print("jp_log window.safeAreaInsets: \(window.safeAreaInsets)")
 //        }
-#endif
     }
     
     static func log_3(_ windowScene: UIWindowScene) {
-#if DEBUG
 //        print("jp_log Env.displayMode: \(self.displayMode.jp_log)")
 //        print("jp_log Env.hingeStatus: \(self.hingeStatus.jp_log)")
 //        print("jp_log Env.hingeAngle: \(self.hingeAngle)")
@@ -605,6 +615,5 @@ private extension Env {
 //            }
 //        }
 //        print("jp_log reset ------------------------------- \(lookTime())")
-#endif
     }
 }
