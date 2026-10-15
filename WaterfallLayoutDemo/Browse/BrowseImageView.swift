@@ -302,6 +302,8 @@ private extension BrowseImageView {
             blurView.frame = bounds.insetBy(dx: -500, dy: -500)
             imageView.layer.transform = CATransform3DIdentity
             imageView.frame = imageFrame
+            resetImageAnchorPoint(x: 0.5, y: 0.5)
+            panGR.isEnabled = true
             return
         }
         

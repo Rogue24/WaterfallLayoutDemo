@@ -377,7 +377,9 @@ private extension HomeViewController {
         guard duration > 0 else {
             collectionView.collectionViewLayout.invalidateLayout()
             collectionView.layoutIfNeeded()
-            resetVisibleCells()
+            DispatchQueue.main.async {
+                self.resetVisibleCells()
+            }
             return
         }
         
