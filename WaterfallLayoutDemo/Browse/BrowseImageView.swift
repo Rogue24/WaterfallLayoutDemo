@@ -9,7 +9,8 @@ import UIKit
 
 class BrowseImageView: UIView {
     private let model: WaterfallModel
-    private let getCell: ((_ model: WaterfallModel) -> WaterfallCell?)?
+    private let getFromCell: ((_ model: WaterfallModel) -> WaterfallCell?)?
+    private let didHide: (() -> Void)?
     
     private let blurView = JPBlurAnimationView(effectStyle: .systemThinMaterialDark, intensity: 0)
     private let imageView = UIImageView()
@@ -36,9 +37,10 @@ class BrowseImageView: UIView {
         }
     }
     
-    init(model: WaterfallModel, getCell: ((_ model: WaterfallModel) -> WaterfallCell?)?) {
+    init(model: WaterfallModel, getFromCell: ((_ model: WaterfallModel) -> WaterfallCell?)?, didHide: (() -> Void)?) {
         self.model = model
-        self.getCell = getCell
+        self.getFromCell = getFromCell
+        self.didHide = didHide
         super.init(frame: Env.sceneBounds)
         clipsToBounds = false
         
@@ -58,9 +60,13 @@ class BrowseImageView: UIView {
 // MARK: - Show / Hide
 extension BrowseImageView {
     @discardableResult
-    static func show(from cell: WaterfallCell, getCell: ((_ model: WaterfallModel) -> WaterfallCell?)?) -> BrowseImageView? {
+    static func show(
+        from cell: WaterfallCell,
+        getFromCell: ((_ model: WaterfallModel) -> WaterfallCell?)?,
+        didHide: (() -> Void)?
+    ) -> BrowseImageView? {
         guard let window = cell.window, let model = cell.model else { return nil }
-        let browseImageView = BrowseImageView(model: model, getCell: getCell)
+        let browseImageView = BrowseImageView(model: model, getFromCell: getFromCell, didHide: didHide)
         browseImageView.show(from: cell, on: window)
         return browseImageView
     }
@@ -102,7 +108,8 @@ extension BrowseImageView {
         imageView.isUserInteractionEnabled = false
         blurView.setIntensity(to: 0, duration: 0.5)
         
-        guard let cell = getCell?(model), let window else {
+        guard let cell = getFromCell?(model), let window else {
+            self.didHide?()
             UIView.animate(withDuration: 0.2) {
                 self.imageView.alpha = 0
             } completion: { _ in
@@ -118,6 +125,7 @@ extension BrowseImageView {
             self.imageView.frame = sourceFrame
         } completion: { _ in
             cell.isHidden = false
+            self.didHide?()
             UIView.animate(withDuration: 0.2) {
                 self.imageView.alpha = 0
             } completion: { _ in
@@ -307,7 +315,13 @@ private extension BrowseImageView {
             return
         }
         
-        UIView.animate(withDuration: duration, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0) {
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            usingSpringWithDamping: 1,
+            initialSpringVelocity: 0,
+            options: .beginFromCurrentState
+        ) {
             self.frame = Env.sceneBounds
             self.blurView.frame = self.bounds.insetBy(dx: -500, dy: -500)
             self.imageView.layer.transform = CATransform3DIdentity

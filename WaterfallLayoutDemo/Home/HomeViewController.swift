@@ -233,6 +233,8 @@ private extension HomeViewController {
                 return c
             }
             return nil
+        } didHide: { [weak self] in
+            self?.resetVisibleCells()
         }
     }
 }
@@ -373,9 +375,9 @@ private extension HomeViewController {
     
     func updateLayout(duration: TimeInterval) {
         resetLayoutAttributes()
+        collectionView.collectionViewLayout.invalidateLayout()
         
         guard duration > 0 else {
-            collectionView.collectionViewLayout.invalidateLayout()
             collectionView.layoutIfNeeded()
             DispatchQueue.main.async {
                 self.resetVisibleCells()
@@ -383,8 +385,13 @@ private extension HomeViewController {
             return
         }
         
-        UIView.animate(withDuration: duration, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0) {
-            self.collectionView.collectionViewLayout.invalidateLayout()
+        UIView.animate(
+            withDuration: 0.5,
+            delay: 0,
+            usingSpringWithDamping: 1,
+            initialSpringVelocity: 0,
+            options: .beginFromCurrentState
+        ) {
             self.collectionView.layoutIfNeeded()
         } completion: { _ in
             self.resetVisibleCells()
@@ -399,7 +406,7 @@ private extension HomeViewController {
             colCount = Env.isHorRegular ? 4 : 3
         }
         
-        contentInsets = UIEdgeInsets(top: 5, left: 20, bottom: 5, right: 20)
+        var contentInsets = UIEdgeInsets(top: 5, left: 20, bottom: 5, right: 20)
         if Env.safeAreaInsets.right > 0 {
             contentInsets.right = Env.safeAreaInsets.right
         }
@@ -409,6 +416,7 @@ private extension HomeViewController {
         } else if Env.safeAreaInsets.left > 0 {
             contentInsets.left = Env.safeAreaInsets.left
         }
+        self.contentInsets = contentInsets
     }
     
     func resetVisibleCells() {
