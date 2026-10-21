@@ -25,11 +25,6 @@ enum Env {
     private(set) static var isVerRegular: Bool = false
     private(set) static var displayMode: EnvDisplayMode = .outerPortrait
     
-    private static var _isConfigured = false
-    private static var _delaySwitch: DispatchWorkItem? = nil
-    private static var _delayReset: DispatchWorkItem? = nil
-    private static var isReseting: Bool { _delayReset != nil }
-    
     static var isLandscapeScreen: Bool { screenBounds.width > screenBounds.height }
     static var isLandscapeScene: Bool { sceneBounds.width > sceneBounds.height }
     static var sceneSize: CGSize { sceneBounds.size }
@@ -104,6 +99,11 @@ enum Env {
     // 内屏铺满 Regular × Regular
     // 内屏半屏 Compact × Regular
 //    static var isInnerDisplay: Bool { isHorRegular && isVerRegular }
+    
+    private static var _isConfigured = false
+    private static var _switchWorkItem: DispatchWorkItem? = nil
+    private static var _resetWorkItem: DispatchWorkItem? = nil
+    private static var isReseting: Bool { _resetWorkItem != nil }
 }
 
 // MARK: - 初始化配置
@@ -226,11 +226,11 @@ extension Env {
 #if DEBUG
         log_1(windowScene)
 #endif
-        _delaySwitch?.cancel()
-        _delaySwitch = nil
+        _switchWorkItem?.cancel()
+        _switchWorkItem = nil
         
-        _delayReset?.cancel()
-        _delayReset = nil
+        _resetWorkItem?.cancel()
+        _resetWorkItem = nil
         
         // 拖拽中尺寸会不断变化，故暂不刷新
         if #available(iOS 26.0, *), windowScene.effectiveGeometry.isInteractivelyResizing {
@@ -242,12 +242,12 @@ extension Env {
         }
         
         // 此时的window还没真正的变化，需要下一轮Runloop才会同步最新的尺寸
-        let resetItem = DispatchWorkItem {
-            _delayReset = nil
+        let resetWorkItem = DispatchWorkItem {
+            _resetWorkItem = nil
             _resetIfNeeded(windowScene)
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: resetItem)
-        _delayReset = resetItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: resetWorkItem)
+        _resetWorkItem = resetWorkItem
     }
     
     private static func _resetIfNeeded(_ windowScene: UIWindowScene) {
@@ -359,7 +359,7 @@ extension Env {
         
         // ---------- 若变化则广播 ----------
         if options.isEmpty {
-//            print("jp_log Env no Change")
+//            print("jp_log reset --- Env no Change")
             return
         }
         
@@ -371,7 +371,7 @@ extension Env {
         ])
 //        print("jp_log Env.safeAreaInsets: \(safeAreaInsets)")
 //        print("jp_log Env.safeAreaWithTabBarInsets: \(safeAreaWithTabBarInsets)")
-//        print("jp_log Env.transitionDuration: \(transitionDuration)")
+//        print("jp_log reset --- Env.transitionDuration: \(transitionDuration)")
     }
 }
 
@@ -382,15 +382,17 @@ extension Env {
         guard displayMode.isSplit else { return }
         guard sceneBounds == window.bounds, safeAreaInsets != window.safeAreaInsets else { return }
         
-        let switchItem = DispatchWorkItem {
-            _delaySwitch = nil
+        _switchWorkItem?.cancel()
+        let switchWorkItem = DispatchWorkItem {
+            _switchWorkItem = nil
             _switchSplitIfNeeded(window)
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: switchItem)
-        _delaySwitch = switchItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08, execute: switchWorkItem)
+        _switchWorkItem = switchWorkItem
     }
     
     static func _switchSplitIfNeeded(_ window: UIWindow) {
+        // 如果是分屏时的拖拽操作，一开始触发时isResizing拿到的是false，需要延时之后才会拿到true。
         if #available(iOS 26.0, *), let windowScene = window.windowScene {
             let isResizing = windowScene.effectiveGeometry.isInteractivelyResizing
             if isResizing {
@@ -474,14 +476,30 @@ extension Env {
     private(set) static var hingeRadian: CGFloat = 0
     static var hingeAngle: CGFloat { (hingeRadian * 180.0) / CGFloat.pi }
     
-    private(set) static var hingeStatus: EnvHingeStatus = .unknown {
-        didSet {
-            guard _isConfigured, hingeStatus != oldValue else { return }
-            NotificationCenter.jp.post(key: .EnvHingeStatusDidChange, userInfo: [
-                "oldStatus": oldValue.rawValue,
-                "nowStatus": hingeStatus.rawValue,
-            ])
-//            print("jp_log 铰链状态发生变化 以前是：\(oldValue.jp_log), 现在是：\(hingeStatus.jp_log)")
+    static var hingeStatusChangeDelay: TimeInterval = 0
+    private static var _changeWorkItem: DispatchWorkItem? = nil
+    
+    private static var _hingeStatus: EnvHingeStatus = .unknown
+    private(set) static var hingeStatus: EnvHingeStatus {
+        get { _hingeStatus }
+        set {
+            guard _isConfigured, _hingeStatus != newValue else { return }
+            _changeWorkItem?.cancel()
+            let changeWorkItem = DispatchWorkItem {
+                _changeWorkItem = nil
+                
+                guard _hingeStatus != newValue else { return }
+                let oldValue = _hingeStatus
+                _hingeStatus = newValue
+                
+                NotificationCenter.jp.post(key: .EnvHingeStatusDidChange, userInfo: [
+                    "oldStatus": oldValue.rawValue,
+                    "nowStatus": newValue.rawValue,
+                ])
+//                print("jp_log 铰链状态发生变化 以前是：\(oldValue.jp_log), 现在是：\(newValue.jp_log)")
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + hingeStatusChangeDelay, execute: changeWorkItem)
+            _changeWorkItem = changeWorkItem
         }
     }
     
