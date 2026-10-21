@@ -250,7 +250,7 @@ extension Env {
         _delayReset = resetItem
     }
     
-    static private func _resetIfNeeded(_ windowScene: UIWindowScene) {
+    private static func _resetIfNeeded(_ windowScene: UIWindowScene) {
 #if DEBUG
         log_2(windowScene)
         defer { log_3(windowScene) }
@@ -450,7 +450,7 @@ extension Env {
 // MARK: - 铰链相关（Duo适配）
 extension Env {
     @available(iOS 27.1, *)
-    static private let interaction = UIHingeInteraction { _, update in
+    private static let interaction = UIHingeInteraction { _, update in
         // 这里是在`viewWillAppear`之后、`viewDidAppear`之前执行的(吧？)
         if let hinge = update.hinge {
             hingeRadian = hinge.angle
@@ -471,10 +471,10 @@ extension Env {
 //        print("jp_log 铰链角度：\(hingeAngle)")
     }
     
-    static private(set) var hingeRadian: CGFloat = 0
+    private(set) static var hingeRadian: CGFloat = 0
     static var hingeAngle: CGFloat { (hingeRadian * 180.0) / CGFloat.pi }
     
-    static private(set) var hingeStatus: EnvHingeStatus = .unknown {
+    private(set) static var hingeStatus: EnvHingeStatus = .unknown {
         didSet {
             guard _isConfigured, hingeStatus != oldValue else { return }
             NotificationCenter.jp.post(key: .EnvHingeStatusDidChange, userInfo: [
