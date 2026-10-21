@@ -406,15 +406,17 @@ private extension HomeViewController {
             colCount = Env.isHorRegular ? 4 : 3
         }
         
+        let safeAreaInsets = Env.safeAreaWithTabBarInsets
+        
         var contentInsets = UIEdgeInsets(top: 5, left: 20, bottom: 5, right: 20)
-        if Env.safeAreaInsets.right > 0 {
-            contentInsets.right = Env.safeAreaInsets.right
+        if safeAreaInsets.right > 0 {
+            contentInsets.right = safeAreaInsets.right
         }
         if Env.displayMode == .innerLandscapeFull, Env.isHingeActive {
             // 横屏对折时，左右间距保持一致，让列表能居中对折
             contentInsets.left = contentInsets.right
-        } else if Env.safeAreaInsets.left > 0 {
-            contentInsets.left = Env.safeAreaInsets.left
+        } else if safeAreaInsets.left > 0 {
+            contentInsets.left = safeAreaInsets.left
         }
         self.contentInsets = contentInsets
     }
