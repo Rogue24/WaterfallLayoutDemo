@@ -213,7 +213,9 @@ extension Env {
 //        print("jp_log Env.safeAreaInsets: \(self.safeAreaInsets)")
 //        print("jp_log Env.displayMode: \(self.displayMode.jp_log)")
 //        print("jp_log Env.hingeStatus: \(self.hingeStatus.jp_log)")
-//        print("jp_log Env.hingeAngle: \(self.hingeAngle)")
+//        print("jp_log Env.xcVersion: \(self.xcVersion)")
+//        print("jp_log Env.isFullScreenRequired: \(self.isFullScreenRequired)")
+//        print("jp_log Env.isDuo: \(self.isDuo)")
 //        print("jp_log setup ------------------------------- \(lookTime())")
     }
 }
