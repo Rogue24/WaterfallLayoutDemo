@@ -147,11 +147,12 @@ extension Env {
         
         safeAreaInsets = window.safeAreaInsets
         
-        // 判断屏幕和App最大边是否相等，否则就是内屏正在分屏展示中（两个App并排同时运行）
-        if max(screenBounds.width, screenBounds.height) == max(sceneBounds.width, sceneBounds.height) {
-            if isHorRegular && isVerRegular { // 内屏铺满 Regular × Regular
-                displayMode = isLandscapeScene ? .innerLandscapeFull : .innerPortraitFull
-            } else { // 外屏
+        if isHorRegular && isVerRegular { // 内屏铺满 Regular × Regular
+            displayMode = isLandscapeScene ? .innerLandscapeFull : .innerPortraitFull
+        } else {
+            // 判断屏幕和App最大边是否相等，相等是在外屏，否则就是内屏正在分屏展示中（两个App并排同时运行）
+            if max(screenBounds.width, screenBounds.height) == max(sceneBounds.width, sceneBounds.height) {
+                // 外屏
                 let orientation: UIInterfaceOrientation
                 if #available(iOS 26.0, *) {
                     orientation = windowScene.effectiveGeometry.interfaceOrientation
@@ -166,22 +167,23 @@ extension Env {
                 default:
                     displayMode = .outerPortrait
                 }
-            }
-        } else { // 内屏分屏
-//            if #available(iOS 27.1, *) {
-//                if let hinge = window.reservedRegions(kind: .division, options: .includeInactive).first {
-//                    if hinge.frame.minX > window.bounds.midX {
-//                        displayMode = .innerSplitLeft // 左边
-//                    } else if hinge.frame.maxX < window.bounds.midX {
-//                        displayMode = .innerSplitRight // 右边
+            } else {
+                // 内屏分屏
+//                if #available(iOS 27.1, *) {
+//                    if let hinge = window.reservedRegions(kind: .division, options: .includeInactive).first {
+//                        if hinge.frame.minX > window.bounds.midX {
+//                            displayMode = .innerSplitLeft // 左边
+//                        } else if hinge.frame.maxX < window.bounds.midX {
+//                            displayMode = .innerSplitRight // 右边
+//                        }
 //                    }
 //                }
-//            }
-            // 临时处理：在左边时不会有右侧栏，所以right是0。
-            if safeAreaInsets.right > 0 { // 右边
-                displayMode = .innerSplitRight
-            } else { // 左边
-                displayMode = .innerSplitLeft
+                // 临时处理：在左边时不会有右侧栏，所以right是0。
+                if safeAreaInsets.right > 0 { // 右边
+                    displayMode = .innerSplitRight
+                } else { // 左边
+                    displayMode = .innerSplitLeft
+                }
             }
         }
         
@@ -292,12 +294,12 @@ extension Env {
         }
         self.screenBounds = screenBounds
         
-        // 判断屏幕和App最大边是否相等，否则就是内屏正在分屏展示中（两个App并排同时运行）
-        if max(screenBounds.width, screenBounds.height) == max(sceneBounds.width, sceneBounds.height) {
-            if isHorRegular && isVerRegular { // 内屏铺满 Regular × Regular
-                let currentIsLandscape = sceneBounds.width > sceneBounds.height
-                displayMode = currentIsLandscape ? .innerLandscapeFull : .innerPortraitFull
-            } else { // 外屏
+        if isHorRegular && isVerRegular { // 内屏铺满 Regular × Regular
+            displayMode = (sceneBounds.width > sceneBounds.height) ? .innerLandscapeFull : .innerPortraitFull
+        } else {
+            // 判断屏幕和App最大边是否相等，相等是在外屏，否则就是内屏正在分屏展示中（两个App并排同时运行）
+            if max(screenBounds.width, screenBounds.height) == max(sceneBounds.width, sceneBounds.height) {
+                // 外屏
                 let orientation: UIInterfaceOrientation
                 if #available(iOS 26.0, *) {
                     orientation = windowScene.effectiveGeometry.interfaceOrientation
@@ -312,22 +314,23 @@ extension Env {
                 default:
                     displayMode = .outerPortrait
                 }
-            }
-        } else { // 内屏分屏
-//            if #available(iOS 27.1, *) {
-//                if let hinge = window.reservedRegions(kind: .division, options: .includeInactive).first {
-//                    if hinge.frame.minX > window.bounds.midX {
-//                        displayMode = .innerSplitLeft // 左边
-//                    } else if hinge.frame.maxX < window.bounds.midX {
-//                        displayMode = .innerSplitRight // 右边
+            } else {
+                // 内屏分屏
+//                if #available(iOS 27.1, *) {
+//                    if let hinge = window.reservedRegions(kind: .division, options: .includeInactive).first {
+//                        if hinge.frame.minX > window.bounds.midX {
+//                            displayMode = .innerSplitLeft // 左边
+//                        } else if hinge.frame.maxX < window.bounds.midX {
+//                            displayMode = .innerSplitRight // 右边
+//                        }
 //                    }
 //                }
-//            }
-            // 临时处理：在左边时不会有右侧栏，所以right是0。
-            if safeAreaInsets.right > 0 { // 右边
-                displayMode = .innerSplitRight
-            } else { // 左边
-                displayMode = .innerSplitLeft
+                // 临时处理：在左边时不会有右侧栏，所以right是0。
+                if safeAreaInsets.right > 0 { // 右边
+                    displayMode = .innerSplitRight
+                } else { // 左边
+                    displayMode = .innerSplitLeft
+                }
             }
         }
         
@@ -677,8 +680,6 @@ private extension Env {
     static func log_3(_ windowScene: UIWindowScene) {
 //        if #available(iOS 26.0, *) {
 //            print("jp_log Env.displayMode: \(self.displayMode.jp_log)")
-//            print("jp_log Env.hingeStatus: \(self.hingeStatus.jp_log)")
-////            print("jp_log Env.hingeAngle: \(self.hingeAngle)")
 //            print("jp_log Env.hingeFrame: \(self.hingeFrame)")
 //            if #available(iOS 27.1, *), let window = windowScene.windows.first {
 //                if let hinge = window.reservedRegions(kind: .division, options: .includeInactive).first {
