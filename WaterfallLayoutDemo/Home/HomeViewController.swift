@@ -14,12 +14,12 @@ class HomeViewController: UIViewController {
     private lazy var collectionView: UICollectionView = {
         let waterfallLayout = WaterfallLayout()
         waterfallLayout.delegate = self
-        waterfallLayout.asyncUpdateLayout(itemTotal: models.count) { [weak self] index, itemWidth in
-            guard let self = self else { return 1 }
+        waterfallLayout.asyncUpdateLayout(itemCount: models.count) { [weak self] index, itemWidth in
+            guard let self else { return 1 }
             let model = self.models[index]
             return itemWidth * (model.image.size.height / model.image.size.width)
         } completion: { [weak self] in
-            guard let self = self else { return }
+            guard let self else { return }
             UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 0.88, initialSpringVelocity: 1) {
                 self.collectionView.performBatchUpdates {
                     self.collectionView.reloadSections(IndexSet(integer: 0))
@@ -47,7 +47,7 @@ class HomeViewController: UIViewController {
     private var isAppear: Bool = false
     
     private var displayMode = Env.displayMode
-    private var hingeStatus = Env.hingeStatus
+//    private var hingeStatus = Env.hingeStatus
     private var isObservingSceneChanges: Bool = false {
         didSet {
             guard isObservingSceneChanges != oldValue else { return }
@@ -59,8 +59,9 @@ class HomeViewController: UIViewController {
         }
     }
     
+    private var viewWidth = Env.sceneWidth
+    private var edgeInsets: UIEdgeInsets = .zero
     private var colCount = 4
-    private var contentInsets: UIEdgeInsets = .zero
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -103,7 +104,7 @@ class HomeViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-//        print("jp_log *** HomeVC ------- viewDidLayoutSubviews:")
+//        print("jp_log *** HomeVC viewDidLayoutSubviews")
 //        print("jp_log *** HomeVC size: \(view.frame.size), safeAreaInsets: \(view.safeAreaInsets))")
 //        print("jp_log *** HomeVC layoutMargins: \(view.layoutMargins)")
 ////        print("jp_log *** HomeVC directionalLayoutMargins: \(view.directionalLayoutMargins)")
@@ -288,6 +289,14 @@ extension HomeViewController: WaterfallLayoutDelegate {
         return model.cellSize.height
     }
     
+    func viewWidthInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat {
+        viewWidth
+    }
+    
+    func edgeInsetsInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> UIEdgeInsets {
+        edgeInsets
+    }
+    
     func colCountInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> Int {
         colCount
     }
@@ -299,10 +308,6 @@ extension HomeViewController: WaterfallLayoutDelegate {
     func rowMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat {
         5
     }
-    
-    func edgeInsetsInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> UIEdgeInsets {
-        contentInsets
-    }
 }
 
 // MARK: - Duo适配_监听场景、铰链状态变化的通知
@@ -313,65 +318,65 @@ private extension HomeViewController {
             selector: #selector(didReceiveEnvSceneDidChange(notification:)),
             key: .EnvSceneDidChange
         )
-        NotificationCenter.jp.addObserver(
-            self,
-            selector: #selector(didReceiveEnvHingeStatusDidChange(notification:)),
-            key: .EnvHingeStatusDidChange
-        )
+//        NotificationCenter.jp.addObserver(
+//            self,
+//            selector: #selector(didReceiveEnvHingeStatusDidChange(notification:)),
+//            key: .EnvHingeStatusDidChange
+//        )
     }
     
     func stopObservingSceneChanges() {
         NotificationCenter.jp.removeObserver(self, key: .EnvSceneDidChange)
-        NotificationCenter.jp.removeObserver(self, key: .EnvHingeStatusDidChange)
+//        NotificationCenter.jp.removeObserver(self, key: .EnvHingeStatusDidChange)
     }
     
     /// 场景发生变化的通知（内外屏切换、内屏旋转、内屏全屏分屏切换、内屏左右分屏切换）
     @objc func didReceiveEnvSceneDidChange(notification: Notification) {
         displayMode = Env.displayMode
-        hingeStatus = Env.hingeStatus
+//        hingeStatus = Env.hingeStatus
         let duration = notification.userInfo?["transitionDuration"] as? TimeInterval ?? 0
         updateLayout(duration: duration)
     }
     
-    /// 铰链状态发生变化的通知
-    @objc func didReceiveEnvHingeStatusDidChange(notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let nowRawValue = userInfo["nowStatus"] as? Int,
-              let nowStatus = EnvHingeStatus(rawValue: nowRawValue),
-              let oldRawValue = userInfo["oldStatus"] as? Int,
-              let oldStatus = EnvHingeStatus(rawValue: oldRawValue)
-        else { return }
-        updateLayoutIfNeeded(from: oldStatus, to: nowStatus, duration: 0.3)
-    }
+//    /// 铰链状态发生变化的通知
+//    @objc func didReceiveEnvHingeStatusDidChange(notification: Notification) {
+//        guard let userInfo = notification.userInfo,
+//              let nowRawValue = userInfo["nowStatus"] as? Int,
+//              let nowStatus = EnvHingeStatus(rawValue: nowRawValue),
+//              let oldRawValue = userInfo["oldStatus"] as? Int,
+//              let oldStatus = EnvHingeStatus(rawValue: oldRawValue)
+//        else { return }
+//        updateLayoutIfNeeded(from: oldStatus, to: nowStatus, duration: 0.3)
+//    }
 }
 
 // MARK: - Duo适配_更新界面布局（如果有变化）
 private extension HomeViewController {
     func updateLayoutIfNeeded() {
         guard displayMode != Env.displayMode else {
-            updateLayoutIfNeeded(from: hingeStatus, to: Env.hingeStatus, duration: 0)
+//            updateLayoutIfNeeded(from: hingeStatus, to: Env.hingeStatus, duration: 0)
             return
         }
         
         displayMode = Env.displayMode
-        hingeStatus = Env.hingeStatus
+//        hingeStatus = Env.hingeStatus
         updateLayout(duration: 0)
     }
     
-    func updateLayoutIfNeeded(from oldStatus: EnvHingeStatus, to nowStatus: EnvHingeStatus, duration: TimeInterval) {
-        guard hingeStatus != nowStatus else { return }
-        hingeStatus = nowStatus
-        
-        // 铰链变化，这里只对内屏横屏做处理
-        guard displayMode == .innerLandscapeFull else { return }
-        
-        // 只对开放状态之间的切换（对折开<->全展开）做布局刷新
-        guard (nowStatus == .partiallyOpen && (oldStatus == .fullyOpen || oldStatus == .unknown))
-           || (oldStatus == .partiallyOpen && nowStatus == .fullyOpen)
-        else { return }
-        
-        updateLayout(duration: duration)
-    }
+//    func updateLayoutIfNeeded(from oldStatus: EnvHingeStatus, to nowStatus: EnvHingeStatus, duration: TimeInterval) {
+//        guard hingeStatus != nowStatus else { return }
+//        hingeStatus = nowStatus
+//        
+//        // 铰链变化，这里只对内屏横屏做处理
+//        guard displayMode == .innerLandscapeFull else { return }
+//        
+//        // 只对开放状态之间的切换（对折开<->全展开）做布局刷新
+//        guard (nowStatus == .partiallyOpen && (oldStatus == .fullyOpen || oldStatus == .unknown))
+//           || (oldStatus == .partiallyOpen && nowStatus == .fullyOpen)
+//        else { return }
+//        
+//        updateLayout(duration: duration)
+//    }
     
     func updateLayout(duration: TimeInterval) {
         resetLayoutAttributes()
@@ -402,23 +407,28 @@ private extension HomeViewController {
 // MARK: - 设置布局属性
 private extension HomeViewController {
     func resetLayoutAttributes() {
+        viewWidth = Env.sceneWidth
+        
+        var edgeInsets = UIEdgeInsets(top: 5, left: 20, bottom: 5, right: 20)
+        // 使用了scrollableAxes，系统已经在滚动（垂直）方向上自动调整了contentInset，因此这里只需要做水平方向的调整
+        let safeAreaInsets = Env.safeAreaWithTabBarInsets
+        if safeAreaInsets.right > 0 {
+            edgeInsets.right = safeAreaInsets.right
+        }
+//        if Env.displayMode == .innerLandscapeFull, Env.isHingeActive {
+//            // 横屏对折时，左右间距保持一致，让列表能居中对折
+//            edgeInsets.left = edgeInsets.right
+//        } else if safeAreaInsets.left > 0 {
+//            edgeInsets.left = safeAreaInsets.left
+//        }
+        if safeAreaInsets.left > 0 {
+            edgeInsets.left = safeAreaInsets.left
+        }
+        self.edgeInsets = edgeInsets
+        
         if Env.isDuo {
             colCount = Env.isHorRegular ? 4 : 3
         }
-        
-        let safeAreaInsets = Env.safeAreaWithTabBarInsets
-        
-        var contentInsets = UIEdgeInsets(top: 5, left: 20, bottom: 5, right: 20)
-        if safeAreaInsets.right > 0 {
-            contentInsets.right = safeAreaInsets.right
-        }
-        if Env.displayMode == .innerLandscapeFull, Env.isHingeActive {
-            // 横屏对折时，左右间距保持一致，让列表能居中对折
-            contentInsets.left = contentInsets.right
-        } else if safeAreaInsets.left > 0 {
-            contentInsets.left = safeAreaInsets.left
-        }
-        self.contentInsets = contentInsets
     }
     
     func resetVisibleCells() {
