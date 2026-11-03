@@ -11,6 +11,12 @@ import UIKit
 protocol WaterfallLayoutDelegate: NSObjectProtocol {
     /// 根据给出的宽度计算出item高度
     func waterfallLayout(_ waterfallLayout: WaterfallLayout, heightForItemAtIndex index: Int, itemWidth: CGFloat) -> CGFloat
+    
+    /// collectionView的宽度
+    @objc optional func viewWidthInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat
+    
+    /// collectionView的内容间距
+    @objc optional func edgeInsetsInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> UIEdgeInsets
 
     /// cell的总列数
     @objc optional func colCountInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> Int
@@ -20,9 +26,6 @@ protocol WaterfallLayoutDelegate: NSObjectProtocol {
     
     /// cell的行间距
     @objc optional func rowMarginInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> CGFloat
-    
-    /// collectionView的内容间距
-    @objc optional func edgeInsetsInWaterFlowLayout(_ waterfallLayout: WaterfallLayout) -> UIEdgeInsets
 }
 
 @objcMembers
@@ -38,6 +41,15 @@ class WaterfallLayout: UICollectionViewLayout {
     static let defaultEdgeInsets = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
     
     // MARK: - 协议参数
+    var itemCount: Int {
+        collectionView?.numberOfItems(inSection: 0) ?? 0
+    }
+    var viewWidth: CGFloat {
+        delegate?.viewWidthInWaterFlowLayout?(self) ?? collectionView?.bounds.width ?? 0
+    }
+    var edgeInsets: UIEdgeInsets {
+        delegate?.edgeInsetsInWaterFlowLayout?(self) ?? Self.defaultEdgeInsets
+    }
     var colCount: Int {
         let colCount = delegate?.colCountInWaterFlowLayout?(self) ?? Self.defaultColCount
         return colCount > 0 ? colCount : 1
@@ -47,9 +59,6 @@ class WaterfallLayout: UICollectionViewLayout {
     }
     var rowMargin: CGFloat {
         delegate?.rowMarginInWaterFlowLayout?(self) ?? Self.defaultRowMargin
-    }
-    var edgeInsets: UIEdgeInsets {
-        delegate?.edgeInsetsInWaterFlowLayout?(self) ?? Self.defaultEdgeInsets
     }
     
     // MARK: - 代理
@@ -75,7 +84,32 @@ class WaterfallLayout: UICollectionViewLayout {
     private var tempAttrsArray: [UICollectionViewLayoutAttributes]?
     private var tempAttrsGrid: AttributesGrid?
     
+    /// 当前 `attrsArray` 对应的输入快照，输入没变就跳过重算
+    private var cachedKey: LayoutCacheKey?
+    
+    private func getCacheKey() -> LayoutCacheKey {
+        LayoutCacheKey(
+            itemCount: itemCount,
+            viewWidth: viewWidth,
+            edgeInsets: edgeInsets,
+            colCount: colCount,
+            colMargin: colMargin,
+            rowMargin: rowMargin
+        )
+    }
+    
     // MARK: - Override
+    
+    /// 当布局发生局部或全局改变时，通知 UICollectionViewLayout 重新计算并更新布局信息
+    override func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
+        // `invalidateEverything`：表示整张旧排版图都不能用了，请全部重新准备，例如 reloadData()
+        // `invalidateDataSourceCounts`：表示“需要重新核对数量”，不表示“数量已经变化”，例如数据的增/删/改/刷新
+        if context.invalidateEverything || context.invalidateDataSourceCounts {
+            // 收到整体失效或重新核对数据的通知，就撤销“旧排版图可以继续使用”的判断依据，接着进入 prepare()
+            cachedKey = nil
+        } // 普通滚动也会触发这个方法，只是这俩 flag 都为 false，所以不用清缓存。
+        super.invalidateLayout(with: context)
+    }
     
     override func prepare() {
         super.prepare()
@@ -98,6 +132,11 @@ class WaterfallLayout: UICollectionViewLayout {
         }
         
         isAsyncLayout = false
+        
+        let cacheKey = getCacheKey()
+        guard cachedKey != cacheKey else { return }
+        cachedKey = cacheKey
+        
         setupAttributes()
         setupContentSize()
     }
@@ -106,9 +145,12 @@ class WaterfallLayout: UICollectionViewLayout {
         attrsArray
     }
     
-//    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-//        super.layoutAttributesForItem(at: indexPath)
-//    }
+    override func layoutAttributesForItem(at indexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
+        guard indexPath.section == 0, attrsArray.indices.contains(indexPath.item) else {
+            return nil
+        }
+        return attrsArray[indexPath.item]
+    }
     
     override var collectionViewContentSize: CGSize {
         contentSize
@@ -172,44 +214,43 @@ class WaterfallLayout: UICollectionViewLayout {
 
 extension WaterfallLayout {
     // MARK: - 异步刷新
-    func asyncUpdateLayout(itemTotal: Int,
+    func asyncUpdateLayout(itemCount: Int,
                            heightForItemAtIndex: @escaping (_ index: Int, _ itemWidth: CGFloat) -> CGFloat,
                            completion: (() -> ())?) {
         isAsyncLayout = true
         
         if Thread.isMainThread {
             DispatchQueue.global().async {
-                self.asyncUpdateLayout(itemTotal: itemTotal,
+                self.asyncUpdateLayout(itemCount: itemCount,
                                        heightForItemAtIndex: heightForItemAtIndex,
                                        completion: completion)
             }
             return
         }
         
-        var colCount: Int = 0
-        var colMargin: CGFloat = 0
-        var rowMargin: CGFloat = 0
-        var edgeInsets: UIEdgeInsets = .zero
-        var collectionViewW: CGFloat = 0
-        DispatchQueue.main.sync {
-            colCount = self.colCount
-            colMargin = self.colMargin
-            rowMargin = self.rowMargin
-            edgeInsets = self.edgeInsets
-            collectionViewW = self.collectionView?.frame.width ?? 0
+        let cacheKey = DispatchQueue.main.sync {
+            let cacheKey = self.getCacheKey()
+            self.cachedKey = cacheKey
+            return cacheKey
         }
         
-        let itemWidth = (collectionViewW - edgeInsets.left - edgeInsets.right - CGFloat(colCount - 1) * colMargin) / CGFloat(colCount)
-        
-        var tempContentSize: CGSize = .zero
-        var tempAttrsArray: [UICollectionViewLayoutAttributes] = []
-        let tempAttrsGrid = AttributesGrid()
+        let viewWidth = cacheKey.viewWidth
+        let edgeInsets = cacheKey.edgeInsets
+        let colCount = cacheKey.colCount
+        let colMargin = cacheKey.colMargin
+        let rowMargin = cacheKey.rowMargin
         
         let attrsColumns = Array(0 ..< colCount).map { _ in
             AttributesColumn(attributes: [], colHeight: edgeInsets.top)
         }
         
-        for item in 0 ..< itemTotal {
+        let itemWidth = (viewWidth - edgeInsets.left - edgeInsets.right - CGFloat(colCount - 1) * colMargin) / CGFloat(colCount)
+        
+        var tempContentSize: CGSize = .zero
+        var tempAttrsArray: [UICollectionViewLayoutAttributes] = []
+        let tempAttrsGrid = AttributesGrid()
+        
+        for item in 0 ..< itemCount {
             // 找出高度最小的那一列
             var destCol = 0
             var destColumn = attrsColumns[destCol]
@@ -258,20 +299,21 @@ private extension WaterfallLayout {
         attrsArray.removeAll()
         nowAttrsGrid.attrsColumns.removeAll()
         
+        let itemCount = self.itemCount
+        let viewWidth = self.viewWidth
+        let edgeInsets = self.edgeInsets
         let colCount = self.colCount
         let colMargin = self.colMargin
         let rowMargin = self.rowMargin
-        let edgeInsets = self.edgeInsets
-        
-        let collectionViewW = collectionView?.frame.width ?? 0
-        let itemTotal = collectionView?.numberOfItems(inSection: 0) ?? 0
-        let itemWidth = (collectionViewW - edgeInsets.left - edgeInsets.right - CGFloat(colCount - 1) * colMargin) / CGFloat(colCount)
+        print("jp_log *** setupAttributes \(itemCount) & \(viewWidth) & \(edgeInsets) & \(colCount)")
         
         let attrsColumns = Array(0 ..< colCount).map { _ in
             AttributesColumn(attributes: [], colHeight: edgeInsets.top)
         }
         
-        for item in 0 ..< itemTotal {
+        let itemWidth = (viewWidth - edgeInsets.left - edgeInsets.right - CGFloat(colCount - 1) * colMargin) / CGFloat(colCount)
+        
+        for item in 0 ..< itemCount {
             // 找出高度最小的那一列
             var destCol = 0
             var destColumn = attrsColumns[destCol]
@@ -485,6 +527,16 @@ private extension WaterfallLayout {
 
 // MARK: - 私有类
 private extension WaterfallLayout {
+    // MARK: 布局缓存参数
+    struct LayoutCacheKey: Equatable {
+        let itemCount: Int
+        let viewWidth: CGFloat
+        let edgeInsets: UIEdgeInsets
+        let colCount: Int
+        let colMargin: CGFloat
+        let rowMargin: CGFloat
+    }
+    
     struct AttributesSeat: Hashable {
         let col: Int
         let row: Int
