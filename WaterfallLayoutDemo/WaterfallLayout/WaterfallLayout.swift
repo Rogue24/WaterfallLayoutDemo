@@ -305,7 +305,6 @@ private extension WaterfallLayout {
         let colCount = self.colCount
         let colMargin = self.colMargin
         let rowMargin = self.rowMargin
-        print("jp_log *** setupAttributes \(itemCount) & \(viewWidth) & \(edgeInsets) & \(colCount)")
         
         let attrsColumns = Array(0 ..< colCount).map { _ in
             AttributesColumn(attributes: [], colHeight: edgeInsets.top)
